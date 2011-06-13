@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <extension
+         point="org.eclipse.ui.commands">
+      <category
+            name="Sample Category"
+            id="scalastuff.eclipse.sbt.commands.category">
+      </category>
+      <command
+            name="Sample Command"
+            categoryId="scalastuff.eclipse.sbt.commands.category"
+            id="scalastuff.eclipse.sbt.commands.sampleCommand">
+      </command>
+   </extension>
+   <extension
+         point="org.eclipse.ui.handlers">
+      <handler
+            commandId="scalastuff.eclipse.sbt.commands.sampleCommand"
+            class="scalastuff.eclipse.sbt.handlers.UpdateProjectConfiguration">
+      </handler>
+   </extension>
+   <extension
+         point="org.eclipse.ui.bindings">
+      <key
+            commandId="scalastuff.eclipse.sbt.commands.sampleCommand"
+            contextId="org.eclipse.ui.contexts.window"
+            sequence="M1+6"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration">
+      </key>
+   </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            locationURI="menu:org.eclipse.ui.main.menu?after=additions">
+         <menu
+               label="Sample Menu"
+               mnemonic="M"
+               id="scalastuff.eclipse.sbt.menus.sampleMenu">
+            <command
+                  commandId="scalastuff.eclipse.sbt.commands.sampleCommand"
+                  mnemonic="S"
+                  id="scalastuff.eclipse.sbt.menus.sampleCommand">
+            </command>
+         </menu>
+      </menuContribution>
+      <menuContribution
+            locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
+         <toolbar
+               id="scalastuff.eclipse.sbt.toolbars.sampleToolbar">
+            <command
+                  commandId="scalastuff.eclipse.sbt.commands.sampleCommand"
+                  icon="icons/sample.gif"
+                  tooltip="Say hello world"
+                  id="scalastuff.eclipse.sbt.toolbars.sampleCommand">
+            </command>
+         </toolbar>
+      </menuContribution>
+   </extension>
+   <extension
+         point="org.eclipse.ui.popupMenus">
+      <objectContribution
+            adaptable="true"
+            id="scalastuff.eclipse.sbt.objectContribution1"
+            objectClass="org.eclipse.core.resources.IProject">
+         <action
+               class="org.scalastuff.esbt.SbtCommandAction"
+               id="scalastuff.esbt.sbtcommand"
+               label="SBT command...">
+         </action>
+         <action
+               class="org.scalastuff.esbt.SbtUpdateAction"
+               id="scalastuff.esbt.update"
+               label="SBT update">
+         </action>
+      </objectContribution>
+   </extension>
+   <extension
+         point="org.eclipse.ui.startup">
+      <startup
+            class="org.scalastuff.esbt.Initializer">
+      </startup>
+   </extension>
+
+</plugin>

@@ -1,0 +1,33 @@
+import sbt._
+import Keys._
+object SbtEclipsePlugin extends Plugin
+{
+  override lazy val settings = Seq(commands += myCommand)
+
+  lazy val myCommand =
+    Command.command("update-eclipse") { (state: State) =>
+        val taskKey = Keys.update in Compile
+        val result: Option[Result[UpdateReport]] = Project.evaluateTask(taskKey, state)
+        result match {
+            case None => // Key wasn't defined.
+            case Some(Inc(inc)) => // error detail- inc is of type Incomplete.  use 
+            println(Incomplete.show(inc.tpe)) //to get an error message
+            case Some(Value(report)) => 
+            val tuples = for (configuration <- report.configurations; module <- configuration.modules) yield {
+            	module.artifacts.find(_._1.classifier == None) match {
+            	case Some(art) =>
+            		val source = module.artifacts.find(_._1.classifier == Some("sources")) match {
+            			case Some(art) => " : " + art._2
+            			case None => ""
+        			}
+            		(module.module.organization, module.module.name, module.module.revision, art._2, source)
+            	case None =>
+            	}
+            }
+            for ((organization, name, version, jar, src) <- tuples.toSet) {
+            	println("[result] dependency: " + organization + " : " + name + " : " + version + " : " + jar + src)
+            }
+        }
+      state
+    }
+}
