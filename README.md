@@ -15,7 +15,7 @@ Eclipse SBT Plugin
 
 Update site:
 
-	https://raw.github.com/scalastuff/esbt/master
+	https://raw.github.com/scalastuff/updatesite/master
 
 # Notes
 
@@ -23,4 +23,3 @@ Update site:
    It will add the default (maven-inspired) paths when they exist.
    Help on how to do this nicely would be appreciated!
    
- - 
