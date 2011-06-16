@@ -46,10 +46,14 @@ public class Processor extends Job {
 	  setPriority(Job.LONG);
 	  List<ISchedulingRule> rules = new ArrayList<ISchedulingRule>();
 	  for (ProjectInfo prg : WorkspaceInfo.getAllProjects()) {
-	  	rules.add(prg.getSbtFile());
-	  	rules.add(prg.getClassPathFile());
+	  	if (prg.getSbtFile().exists()) {
+	  		rules.add(prg.getSbtFile());
+	  	}
+	  	if (prg.getClassPathFile().exists()) {
+	  		rules.add(prg.getClassPathFile());
+	  	}
 	  }
-		setRule(new MultiRule(rules.toArray(new ISchedulingRule[0])));
+//		setRule(new MultiRule(rules.toArray(new ISchedulingRule[0])));
 	}
 	
 	public void setProjects(List<ProjectInfo> projects) {
@@ -67,7 +71,7 @@ public class Processor extends Job {
 	}
 	
 	@Override
-	protected IStatus run(IProgressMonitor monitor) {
+	protected synchronized IStatus run(IProgressMonitor monitor) {
 		try {
 			try {
 				Collection<ProjectInfo> modifiedProjects = getModifiedProjects();

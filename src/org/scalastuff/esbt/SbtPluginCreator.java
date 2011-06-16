@@ -30,14 +30,11 @@ public class SbtPluginCreator {
 	private static File userHome;
 	
 	public static void createSbtPlugin() throws IOException {
-		// for debugging purposes
-		if (userHome == null || true) {
-			userHome = new File(System.getProperty("user.home"));
-			File pluginDir = new File(userHome, ".sbt/plugins");
-			pluginDir.mkdirs();
-			createBuildSbt(pluginDir);
-			createSbtEclipsePluginFile(pluginDir);
-		}
+		userHome = new File(System.getProperty("user.home"));
+		File pluginDir = new File(userHome, ".sbt/plugins");
+		pluginDir.mkdirs();
+		createBuildSbt(pluginDir);
+		createSbtEclipsePluginFile(pluginDir);
 	}
 	
 	private static void createBuildSbt(File pluginDir) throws IOException {

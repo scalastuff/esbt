@@ -133,7 +133,8 @@ public class ProjectInfo {
 	}
 
 	public void update(InvokeSbt sbt) throws CoreException {
-		List<String> lines = read(project.getFile(CLASSPATH_FILE));
+		IFile file = project.getFile(CLASSPATH_FILE);
+		List<String> lines = read(file);
 		
 		// combine sbt project deps with sbt project deps
 		Set<ProjectInfo> projectDeps = getSbtFileProjectDependencies();
@@ -146,10 +147,15 @@ public class ProjectInfo {
 				deps.add(dep);
 			}
 		}
-		lines = ClasspathFile.update(lines, projectDeps, deps);
-		project.getFile(CLASSPATH_FILE).setContents(Utils.linesInputStream(lines), 0, null);
+		this.classpathFile = ClasspathFile.update(this, lines, projectDeps, deps);
+		if (!lines.equals(classpathFile)) {
+			if (file.exists()) {
+				file.setContents(Utils.linesInputStream(classpathFile), 0, null);
+			} else {
+				file.create(Utils.linesInputStream(classpathFile), 0, null);
+			}
+		}
 		this.sbtFile = readSbtFile();
-		this.classpathFile = lines;
 		this.cachedSbtFile = null;
 	}
 	

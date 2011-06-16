@@ -6,6 +6,7 @@ object SbtEclipsePlugin extends Plugin
 
   lazy val myCommand =
     Command.command("update-eclipse") { (state: State) =>
+    
         val taskKey = Keys.update in Compile
         val result: Option[Result[UpdateReport]] = Project.evaluateTask(taskKey, state)
         result match {

@@ -29,13 +29,12 @@ public class ClasspathFile {
 		return true;//lines.isEmpty() || lines.contains(PLUGIN_INDICATION);
 	}
 	
-	public static List<String> update(List<String> lines, Set<ProjectInfo> projectDeps, List<Dependency> deps) {
+	public static List<String> update(ProjectInfo project, List<String> lines, Set<ProjectInfo> projectDeps, List<Dependency> deps) {
 		lines = new ArrayList<String>(lines);
 		if (lines.isEmpty()) {
 			lines.add("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
 			lines.add(PLUGIN_INDICATION);
 			lines.add("<classpath>");
-			lines.add("	<classpathentry kind=\"output\" path=\"bin\"/>");
 			lines.add("</classpath>");
 		}
 		for (Dependency dep : deps) {
@@ -58,14 +57,25 @@ public class ClasspathFile {
 		boolean scalaContainer = indexOfLineContaining(lines, "SCALA_CONTAINER") != -1;
 		for (Dependency dep : deps) {
 			if (scalaContainer && dep.name.equals("scala-library")) continue;
-			lines.add(line, "  <classpathentry from=\"sbt\" kind=\"lib\" path=\"" + dep.jar.trim() + "\"" + (!dep.srcJar.trim().isEmpty()? " sourcepath=\"" + dep.srcJar.trim() + "\"" : "") + "/>");
-			line++;
+			lines.add(line++, "\t<classpathentry from=\"sbt\" kind=\"lib\" path=\"" + dep.jar.trim() + "\"" + (!dep.srcJar.trim().isEmpty()? " sourcepath=\"" + dep.srcJar.trim() + "\"" : "") + "/>");
 		}
 		for (ProjectInfo dep : projectDeps) {
-			//	<classpathentry combineaccessrules="false" kind="src" path="/MyLibrary"/>
+			lines.add(line++, "\t<classpathentry from=\"sbt\" combineaccessrules=\"false\" kind=\"src\" path=\"/" + dep.getProject().getName() + "\"/>");
+		}
 
-			lines.add(line, "  <classpathentry from=\"sbt\" combineaccessrules=\"false\" kind=\"src\" path=\"/" + dep.getProject().getName() + "\"/>");
-			line++;
+		if (indexOfLineContaining(lines, "kind=\"con\"") < 0) {
+			lines.add(line++, "\t<classpathentry kind=\"con\" path=\"org.eclipse.jdt.launching.JRE_CONTAINER\"/>");
+		}
+		if (indexOfLineContaining(lines, "kind=\"output\"") < 0) {
+			lines.add(line++, "\t<classpathentry kind=\"output\" path=\"target/classes\"/>");
+		}
+		String[] sourcePaths = new String[] {"src/main/scala", "src/main/java", "src/test/scala", "src/main/java"};
+		for (String path : sourcePaths) {
+			if (project.getProject().getFolder(path).exists()) {
+				if (indexOfLineContaining(lines, path) < 0) {
+					lines.add(line++, "\t<classpathentry kind=\"src\" path=\"" + path + "\"/>");
+				}
+			}
 		}
 		
 		return lines;
