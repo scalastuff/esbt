@@ -59,18 +59,6 @@
             </command>
        
       </menuContribution>
-      <menuContribution
-            locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
-         <toolbar
-               id="org.scalastuff.esbt.toolbars.sampleToolbar">
-            <command
-                  commandId="org.scalastuff.esbt.commands.sampleCommand"
-                  icon="icons/sample.gif"
-                  tooltip="Say hello world"
-                  id="org.scalastuff.esbt.toolbars.sampleCommand">
-            </command>
-         </toolbar>
-      </menuContribution>
    </extension>
    <extension
          point="org.eclipse.ui.startup">
