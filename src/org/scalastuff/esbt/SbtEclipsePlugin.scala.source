@@ -17,7 +17,7 @@ object SbtEclipsePlugin extends Plugin
             	module.artifacts.find(_._1.classifier == None) match {
             	case Some(art) =>
             		val source = module.artifacts.find(_._1.classifier == Some("sources")) match {
-            			case Some(art) => " : " + art._2
+            			case Some(art) => " :: " + art._2
             			case None => ""
         			}
             		(module.module.organization, module.module.name, module.module.revision, art._2, source)
@@ -25,7 +25,7 @@ object SbtEclipsePlugin extends Plugin
             	}
             }
             for ((organization, name, version, jar, src) <- tuples.toSet) {
-            	println("[result] dependency: " + organization + " : " + name + " : " + version + " : " + jar + src)
+            	println("[result] dependency :: " + organization + " :: " + name + " :: " + version + " :: " + jar + src)
             }
         }
       state

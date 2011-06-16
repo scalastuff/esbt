@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 
@@ -22,10 +23,8 @@ public class ProjectInfo {
 	private List<String> classpathFile = Collections.emptyList();
 	
 	private List<String> cachedSbtFile;
-	private final WorkspaceInfo workspace;
 
-	public ProjectInfo(WorkspaceInfo workspace, IProject project) {
-		this.workspace = workspace;
+	public ProjectInfo(IProject project) {
 		this.project = project;
 	}
 	
@@ -35,6 +34,14 @@ public class ProjectInfo {
 	
 	public File getProjectDir() {
 		return new File(project.getLocationURI());
+	}
+	
+	public IFile getSbtFile() {
+		return project.getFile(SBT_FILE);
+	}
+	
+	public IFile getClassPathFile() {
+		return project.getFile(CLASSPATH_FILE);
 	}
 	
 	public String getOrganization() {
@@ -54,7 +61,7 @@ public class ProjectInfo {
 		for (String line : readSbtFile()) {
 			Dependency dep = getLibraryDependency(line);
 			if (dep != null) {
-				ProjectInfo depPrj = workspace.findProject(dep.organization, dep.name, dep.version);
+				ProjectInfo depPrj = WorkspaceInfo.findProject(dep.organization, dep.name, dep.version);
 				if (depPrj != null) continue;
 			}
 			result.add(line);
@@ -67,7 +74,7 @@ public class ProjectInfo {
 		for (String line : readSbtFile()) {
 			Dependency dep = getLibraryDependency(line);
 			if (dep != null) {
-				ProjectInfo depPrj = workspace.findProject(dep.organization, dep.name, dep.version);
+				ProjectInfo depPrj = WorkspaceInfo.findProject(dep.organization, dep.name, dep.version);
 				if (depPrj != null) result.add(depPrj);
 			}
 		}
@@ -117,14 +124,14 @@ public class ProjectInfo {
 		Set<ProjectInfo> projectDeps = getSbtFileProjectDependencies();
 		List<Dependency> deps = new ArrayList<Dependency>();
 		for (Dependency dep : sbt.getDependencies()) {
-			ProjectInfo depProject = workspace.findProject(dep.organization, dep.name, dep.version);
+			ProjectInfo depProject = WorkspaceInfo.findProject(dep.organization, dep.name, dep.version);
 			if (depProject != null) {
 				projectDeps.add(depProject);
 			} else {
 				deps.add(dep);
 			}
 		}
-		lines = ClasspathFile.update(workspace, lines, projectDeps, deps);
+		lines = ClasspathFile.update(lines, projectDeps, deps);
 		project.getFile(CLASSPATH_FILE).setContents(Utils.linesInputStream(lines), 0, null);
 		this.sbtFile = readSbtFile();
 		this.classpathFile = lines;

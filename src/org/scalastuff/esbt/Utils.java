@@ -84,11 +84,22 @@ public class Utils {
 	}
 	
 	public static int indexOfLineContaining(List<String> lines, String s) {
+		s = stripSpaces(s);
 		for (int i = 0; i < lines.size(); i++) {
-			if (lines.get(i).contains(s)) {
+			if (stripSpaces(lines.get(i)).contains(s)) {
 				return i;
 			}
 		}
 		return -1;
+	}
+	
+	public static String stripSpaces(String s) {
+		StringBuilder builder = new StringBuilder();
+		for (int i = 0; i < s.length(); i++) {
+			if (!Character.isWhitespace(s.charAt(i))) {
+				builder.append(s.charAt(i));
+			}
+		}
+		return builder.toString();
 	}
 }

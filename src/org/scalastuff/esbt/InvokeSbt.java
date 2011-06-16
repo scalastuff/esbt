@@ -116,7 +116,7 @@ public class InvokeSbt {
 			
 			// detect result
 			else if (line.startsWith("[result]")) {
-				String[] fields = line.split(":");
+				String[] fields = line.split("::");
 				if (fields[0].contains("dependency")) {
 					Dependency dependency = new Dependency();
 					for (int i = 1; i < fields.length; i++) {

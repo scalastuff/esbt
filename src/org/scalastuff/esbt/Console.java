@@ -59,4 +59,9 @@ public class Console {
 		}
 		stream = null;
 	}
+
+	public void activate() {
+		console.activate();
+		
+	}
 }

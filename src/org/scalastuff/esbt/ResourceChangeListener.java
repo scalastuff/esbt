@@ -11,7 +11,6 @@ import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.ui.PartInitException;
 
 public class ResourceChangeListener implements IResourceChangeListener {
 
@@ -54,11 +53,9 @@ public class ResourceChangeListener implements IResourceChangeListener {
 	}
 	try {
 		new Processor().schedule();
-	} catch (PartInitException e) {
-		// TODO Auto-generated catch block
+	} 
+	catch (Exception e) {
 		e.printStackTrace();
 	}
-//	new Console().println(projects.toString());
 	}
-
 }

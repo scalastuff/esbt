@@ -14,7 +14,7 @@ public class ClasspathFile {
 		return true;//lines.isEmpty() || lines.contains(PLUGIN_INDICATION);
 	}
 	
-	public static List<String> update(WorkspaceInfo workspace, List<String> lines, Set<ProjectInfo> projectDeps, List<Dependency> deps) {
+	public static List<String> update(List<String> lines, Set<ProjectInfo> projectDeps, List<Dependency> deps) {
 		lines = new ArrayList<String>(lines);
 		if (lines.isEmpty()) {
 			lines.add("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");

@@ -1,16 +1,17 @@
 package org.scalastuff.esbt;
 
+import static org.scalastuff.esbt.Utils.indexOfLineContaining;
 import static org.scalastuff.esbt.Utils.read;
+import static org.scalastuff.esbt.Utils.write;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.List;
 
-public class SbtPlugin {
+public class SbtPluginCreator {
 	
 	private static File userHome;
 	
@@ -18,7 +19,6 @@ public class SbtPlugin {
 		// for debugging purposes
 		if (userHome == null || true) {
 			userHome = new File(System.getProperty("user.home"));
-			userHome.delete();
 			File pluginDir = new File(userHome, ".sbt/plugins");
 			pluginDir.mkdirs();
 			createBuildSbt(pluginDir);
@@ -31,33 +31,24 @@ public class SbtPlugin {
 		if (!file.exists()) {
 			file.createNewFile();
 		}
-		List<String> lines = read(new FileInputStream(file));
-		for (String line : lines) {
-			if (line.startsWith(line)) {
-				return;
-			}
+		List<String> lines = read(file);
+		if (indexOfLineContaining(lines, "sbtPlugin := true") < 0) {
+			lines.add("");
+			lines.add("sbtPlugin := true");
+			write(new FileOutputStream(file), lines);
 		}
-		lines.add("");
-		lines.add("sbtPlugin := true");
-		Utils.write(new FileOutputStream(file), lines);
 	}
 	
 	private static void createSbtEclipsePluginFile(File pluginDir) throws IOException {
-		InputStream is = SbtPlugin.class.getResourceAsStream("SbtEclipsePlugin.scala.source");
+		InputStream is = SbtPluginCreator.class.getResourceAsStream("SbtEclipsePlugin.scala.source");
 		if (is == null) {
 			throw new IOException("Coulnd't find SbtEclipsePlugin.scala.source");
 		}
+		List<String> content = read(is);
 		File destFile = new File(pluginDir, "SbtEclipsePlugin.scala");
-		OutputStream os = new FileOutputStream(destFile);
-		try {
-			byte[] b = new byte[2000];
-			int read;
-			while ((read = is.read(b)) != -1) {
-				os.write(b, 0, read);
-			}
-		} finally {
-			is.close();
-			os.close();
+		List<String> existingContent = read(destFile);
+		if (!content.equals(existingContent)) {
+			write(new FileOutputStream(destFile), content);
 		}
 	}
 }

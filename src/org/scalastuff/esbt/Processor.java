@@ -5,32 +5,39 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.ui.PartInitException;
+import org.eclipse.core.runtime.jobs.MultiRule;
 
 public class Processor extends Job {
 
-	private static WorkspaceInfo workspaceInfo = new WorkspaceInfo();
+	// The plug-in ID
+	public static final String PLUGIN_ID = "scalastuff.eclipse.sbt"; //$NON-NLS-1$
+
 	private Console console;
-	private List<IProject> projects;
+	private List<ProjectInfo> projects;
 	private String command;
 	
-	public Processor() throws PartInitException {
+	public Processor() throws CoreException, IOException {
 		super("SBT Project Update");
 	  setPriority(Job.LONG);
-		setRule(ResourcesPlugin.getWorkspace().getRoot());
+	  List<ISchedulingRule> rules = new ArrayList<ISchedulingRule>();
+	  for (ProjectInfo prg : WorkspaceInfo.getAllProjects()) {
+	  	rules.add(prg.getSbtFile());
+	  	rules.add(prg.getClassPathFile());
+	  }
+		setRule(new MultiRule(rules.toArray(new ISchedulingRule[0])));
 	}
 	
-	public void setProjects(List<IProject> projects) {
+	public void setProjects(List<ProjectInfo> projects) {
 		this.projects = projects;
 	}
 	
@@ -38,14 +45,17 @@ public class Processor extends Job {
 		this.command = command;
 	}
 	
+	private Collection<ProjectInfo> getModifiedProjects() throws CoreException, IOException {
+		return projects != null ? 
+				projects :
+			WorkspaceInfo.getModifiedProjects();
+	}
+	
 	@Override
 	protected IStatus run(IProgressMonitor monitor) {
 		try {
 			try {
-				Set<ProjectInfo> modifiedProjects = 
-						this.projects != null ? 
-								workspaceInfo.getProjects(this.projects) : 
-								workspaceInfo.getModifiedProjects();
+				Collection<ProjectInfo> modifiedProjects = getModifiedProjects();
 				if (modifiedProjects.isEmpty()) return Status.OK_STATUS;
 				console = new Console();
 				for (ProjectInfo modifiedSbtProject : modifiedProjects) {
@@ -53,10 +63,10 @@ public class Processor extends Job {
 				}
 				return Status.OK_STATUS;
 			} catch (Throwable t) {
-				return new Status(Status.ERROR, Activator.PLUGIN_ID, t.getMessage(), t);
+				return new Status(Status.ERROR, PLUGIN_ID, t.getMessage(), t);
 			}
 		} catch (Throwable t) {
-			return new Status(Status.ERROR, Activator.PLUGIN_ID, t.getMessage(), t);
+			return new Status(Status.ERROR, PLUGIN_ID, t.getMessage(), t);
 		} finally {
 			try {
 				if (console != null) {
@@ -70,14 +80,16 @@ public class Processor extends Job {
 	
 	private void process(ProjectInfo project) throws IOException, CoreException {
 		if (project.isUnderSbtControl()) {
-			SbtPlugin.createSbtPlugin();
+			console.activate();
 			console.println("*** Processing Project: " + project.getName() + " ***");
 			InvokeSbt sbt = new InvokeSbt(project, console);		
 			if (command != null) {
 				sbt.setCommand(command);
-				sbt.setProjectDir(cloneProjectDir(project));
+				sbt.setProjectDir(project.getProjectDir());
 				sbt.invokeSbt();
 			} else {
+				SbtPluginCreator.createSbtPlugin();
+				sbt.setProjectDir(cloneProjectDir(project));
 				sbt.invokeSbt();
 				project.update(sbt);
 			}
