@@ -21,19 +21,29 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-public class ClasspathFile {
+import org.eclipse.core.runtime.CoreException;
 
-	private static final String PLUGIN_INDICATION = "<!-- Eclipse SBT Plugin -->";
-	
+public class ClassPathFile extends AbstractFile {
+
+	private final ProjectInfo project;
+
 	public static boolean isUnderSbtControl(List<String> lines) {
 		return true;//lines.isEmpty() || lines.contains(PLUGIN_INDICATION);
 	}
 	
-	public static List<String> update(ProjectInfo project, List<String> lines, Set<ProjectInfo> projectDeps, List<Dependency> deps) {
+	public ClassPathFile(ProjectInfo project) {
+		super(project.getProject().getFile(".classpath"));
+		this.project = project;
+  }
+	
+	public void write(Set<ProjectInfo> projectDeps, List<Dependency> deps) throws CoreException {
+		super.write(update(project, refresh(), projectDeps, deps));
+	}
+	
+	private static List<String> update(ProjectInfo project, List<String> lines, Set<ProjectInfo> projectDeps, List<Dependency> deps) {
 		lines = new ArrayList<String>(lines);
 		if (lines.isEmpty()) {
 			lines.add("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-			lines.add(PLUGIN_INDICATION);
 			lines.add("<classpath>");
 			lines.add("</classpath>");
 		}

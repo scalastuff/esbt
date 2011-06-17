@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Eclipse Sbt Plugin
 Bundle-SymbolicName: scalastuff.esbt;singleton:=true
-Bundle-Version: 0.10.0
+Bundle-Version: 0.10.2
 Bundle-Vendor: ScalaStuff
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,

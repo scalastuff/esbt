@@ -77,7 +77,7 @@ public class InvokeSbt {
 		File javaHome = new File(System.getProperty("java.home"));
 		File javaExec = new File(javaHome, "bin/java"); 
 		if (!javaExec.exists()) {
-			javaExec = new File(javaHome, "bin/java.exe");
+			javaExec = new File(javaHome, "bin/javaw.exe");
 		}
 		ArrayList<String> args = new ArrayList<String>();
 		args.add(javaExec.toString());

@@ -19,7 +19,7 @@ Update site:
 
 # Notes
 
- - The plugin doesn't get path information from SBT as of yet. 
-   It will add the default (maven-inspired) paths when they exist.
-   Help on how to do this nicely would be appreciated!
+ - Custom scala source paths (other than e.g. /src/main/scala) or
+   not supported. The plugin doesn't get this information from SBT as of yet. 
+   Help on how to get this information from within an SBT plugin would be appreciated!
    

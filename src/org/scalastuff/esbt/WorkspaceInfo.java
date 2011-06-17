@@ -67,7 +67,7 @@ public class WorkspaceInfo {
 		return result;
 	}
 	
-	public static Set<ProjectInfo> getModifiedProjects() throws CoreException, IOException {
+	public static Set<ProjectInfo> pullModifiedProjects() throws CoreException, IOException {
 		updateProjects();
 		Set<ProjectInfo> result = new HashSet<ProjectInfo>();
 		for (ProjectInfo project : projects.values()) {
@@ -80,9 +80,9 @@ public class WorkspaceInfo {
 	
 	public static ProjectInfo findProject(String organization, String name, String version) {
 		for (ProjectInfo project : projects.values()) {
-			if (project.getOrganization().equals(organization)
-					&& project.getName().equals(name)
-					&& project.getVersion().equals(version)) {
+			if (project.getSbtFile().getOrganization().equals(organization)
+					&& project.getSbtFile().getName().equals(name)
+					&& project.getSbtFile().getVersion().equals(version)) {
 				return project;
 			}
 		}

@@ -30,7 +30,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.core.runtime.jobs.MultiRule;
 
 public class Processor extends Job {
 
@@ -47,10 +46,10 @@ public class Processor extends Job {
 	  List<ISchedulingRule> rules = new ArrayList<ISchedulingRule>();
 	  for (ProjectInfo prg : WorkspaceInfo.getAllProjects()) {
 	  	if (prg.getSbtFile().exists()) {
-	  		rules.add(prg.getSbtFile());
+	  		rules.add(prg.getSbtFile().getFile());
 	  	}
 	  	if (prg.getClassPathFile().exists()) {
-	  		rules.add(prg.getClassPathFile());
+	  		rules.add(prg.getClassPathFile().getFile());
 	  	}
 	  }
 //		setRule(new MultiRule(rules.toArray(new ISchedulingRule[0])));
@@ -64,43 +63,48 @@ public class Processor extends Job {
 		this.command = command;
 	}
 	
-	private Collection<ProjectInfo> getModifiedProjects() throws CoreException, IOException {
-		return projects != null ? 
-				projects :
-			WorkspaceInfo.getModifiedProjects();
+	private Collection<ProjectInfo> pullModifiedProjects() throws CoreException, IOException {
+		List<ProjectInfo> projects2 = projects;
+		projects = null;
+		return projects2 != null ? 
+				projects2 :
+			WorkspaceInfo.pullModifiedProjects();
 	}
 	
 	@Override
-	protected synchronized IStatus run(IProgressMonitor monitor) {
-		try {
+	protected IStatus run(IProgressMonitor monitor) {
+		synchronized (Processor.class) {
 			try {
-				Collection<ProjectInfo> modifiedProjects = getModifiedProjects();
-				if (modifiedProjects.isEmpty()) return Status.OK_STATUS;
-				console = new Console();
-				for (ProjectInfo modifiedSbtProject : modifiedProjects) {
-					process(modifiedSbtProject);
+				try {
+					while (true) {
+						Collection<ProjectInfo> modifiedProjects = pullModifiedProjects();
+						if (modifiedProjects.isEmpty()) return Status.OK_STATUS;
+						console = new Console();
+						for (ProjectInfo modifiedSbtProject : modifiedProjects) {
+							process(modifiedSbtProject);
+						}
+					}
+				} catch (Throwable t) {
+					return new Status(Status.ERROR, PLUGIN_ID, t.getMessage(), t);
 				}
-				return Status.OK_STATUS;
 			} catch (Throwable t) {
 				return new Status(Status.ERROR, PLUGIN_ID, t.getMessage(), t);
-			}
-		} catch (Throwable t) {
-			return new Status(Status.ERROR, PLUGIN_ID, t.getMessage(), t);
-		} finally {
-			try {
-				if (console != null) {
-					console.close();
+			} finally {
+				try {
+					if (console != null) {
+						console.close();
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
 				}
-			} catch (IOException e) {
-				e.printStackTrace();
 			}
 		}
 	}
 	
 	private void process(ProjectInfo project) throws IOException, CoreException {
-		if (project.isUnderSbtControl()) {
+		if (project.getSbtFile().exists()) {
 			console.activate();
-			console.println("*** Processing Project: " + project.getName() + " ***");
+			console.println("*** Processing Project: " + project.getSbtFile().getName() + " ***");
 			InvokeSbt sbt = new InvokeSbt(project, console);		
 			if (command != null) {
 				sbt.setCommand(command);
@@ -120,7 +124,8 @@ public class Processor extends Job {
 		// create build.sbt
 		File dir = new File(WorkspaceInfo.getMetaDataDir(), "tmpprj");
 		dir.mkdirs();
-		List<String> sbtFile = project.getSbtFileWithoutProjectDependencies();
+		project.getSbtFile().refresh();
+		List<String> sbtFile = project.getSbtFile().getContentWithoutProjectDependencies();
 		Utils.write(new FileOutputStream(new File(dir, "build.sbt")), sbtFile);
 		
 		// copy Build.scala
