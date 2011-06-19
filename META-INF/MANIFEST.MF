@@ -2,12 +2,12 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Eclipse Sbt Plugin
 Bundle-SymbolicName: scalastuff.esbt;singleton:=true
-Bundle-Version: 0.10.3
+Bundle-Version: 0.10.4
 Bundle-Vendor: ScalaStuff
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
- org.eclipse.ui.console;bundle-version="3.5.0",
- org.eclipse.core.resources;bundle-version="3.6.1",
- org.eclipse.core.expressions;bundle-version="3.4.200"
+ org.eclipse.ui.console;bundle-version="[3.5.0,3.8.0)",
+ org.eclipse.core.resources;bundle-version="[3.6.0,3.8.0)",
+ org.eclipse.core.expressions;bundle-version="[3.4.0,3.8.0)"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ActivationPolicy: lazy
