@@ -23,21 +23,6 @@ public class BuildSbtFile extends AbstractFile {
 		return getSbtPropertyValue("version");
 	}
 	
-	public List<Dependency> getLibraryDependencies() {
-		List<Dependency> result = new ArrayList<Dependency>();
-		for (int i = 0; i < getContent().size(); i++) {
-			String line = getContent().get(i);
-			if (line.trim().startsWith("libraryDependencies")) {
-				for (int braces = countBraces(line); braces > 0 && i < getContent().size(); i++) {
-					line = line + getContent().get(i);
-				}
-				for (String depString : line.split(",")) {
-					result.add(getLibraryDependency(depString));
-				}
-			}
-		}
-		return result;
-	}	
 
 	public Set<ProjectInfo> getProjectDependencies() {
 		Set<ProjectInfo> result = new HashSet<ProjectInfo>();
@@ -47,7 +32,30 @@ public class BuildSbtFile extends AbstractFile {
 		}
 		return result;
 	}
-	
+
+	public List<Dependency> getLibraryDependencies() {
+		List<Dependency> result = new ArrayList<Dependency>();
+		for (int i = 0; i < getContent().size(); i++) {
+			String line = getContent().get(i);
+			if (line.trim().startsWith("libraryDependencies")) {
+				for (int braces = countBraces(line), j = 0; braces > 0 && i < getContent().size(); i++, j++) {
+					if (j > 0) line = line + getContent().get(i);
+				}
+				
+				String[] depStrings = line.split(",");
+				if (depStrings.length > 0) {
+					for (int count = countBraces(depStrings[0]); count > 0; count--) {
+						depStrings[depStrings.length - 1] = removeLast(depStrings[depStrings.length - 1], ')'); 
+					}
+					for (String depString : depStrings) {
+						result.add(getLibraryDependency(depString));
+					}
+				}
+			}
+		}
+		return result;
+	}	
+
 	public static Dependency getLibraryDependency(String depString) {
 		List<String> values = readStrings(depString);
 		Dependency dependency = new Dependency();
@@ -142,4 +150,10 @@ public class BuildSbtFile extends AbstractFile {
 		if (index < 0) return "";
 		else return s.substring(index + 1);
 	}
+
+	private static String removeLast(String s, char c) {
+		int index = s.lastIndexOf(c);
+		if (index < 0) return s;
+		else return s.substring(0, index) + s.substring(index + 1);
+  }
 }
