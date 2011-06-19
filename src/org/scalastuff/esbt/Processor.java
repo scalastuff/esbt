@@ -104,7 +104,8 @@ public class Processor extends Job {
 	private void process(ProjectInfo project) throws IOException, CoreException {
 		if (project.getSbtFile().exists()) {
 			console.activate();
-			console.println("*** Processing Project: " + project.getSbtFile().getName() + " ***");
+			console.println("");
+			console.println("****** Processing Project: " + project.getSbtFile().getName());
 			InvokeSbt sbt = new InvokeSbt(project, console);		
 			if (command != null) {
 				sbt.setCommand(command);
