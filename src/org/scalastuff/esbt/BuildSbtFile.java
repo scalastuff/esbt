@@ -28,10 +28,8 @@ public class BuildSbtFile extends AbstractFile {
 		for (int i = 0; i < getContent().size(); i++) {
 			String line = getContent().get(i);
 			if (line.trim().startsWith("libraryDependencies")) {
-				if (line.contains("(")) {
-					for (; i < getContent().size() && !line.contains(")"); i++) {
-						line = line + getContent().get(i);
-					}
+				for (int braces = countBraces(line); braces > 0 && i < getContent().size(); i++) {
+					line = line + getContent().get(i);
 				}
 				for (String depString : line.split(",")) {
 					result.add(getLibraryDependency(depString));
@@ -62,6 +60,7 @@ public class BuildSbtFile extends AbstractFile {
 			case 3: dependency.qualifier = values.get(i).trim(); break;
 			}
 		}
+		dependency.rest = afterLast(depString, '"').trim(); 
 		return dependency;
 	}
 	
@@ -70,10 +69,8 @@ public class BuildSbtFile extends AbstractFile {
 		for (int i = 0; i < getContent().size(); i++) {
 			String line = getContent().get(i);
 			if (line.trim().startsWith("libraryDependencies")) {
-				if (line.contains("(")) {
-					for (; i < getContent().size() && !line.contains(")"); i++) {
-						line = line + getContent().get(i);
-					}
+				for (int braces = countBraces(line); braces > 0 && i < getContent().size(); i++) {
+					line = line + getContent().get(i);
 				}
 			} else {
 				result.add(line);
@@ -82,7 +79,7 @@ public class BuildSbtFile extends AbstractFile {
 		for (Dependency dep : getLibraryDependencies()) {
 			if (WorkspaceInfo.findProject(dep.organization, dep.name, dep.version) == null) {
 				result.add("");
-				result.add("libraryDependencies += \"" + dep.organization + "\" " + (dep.crossCompiled ? "%%" : "%") + " \"" + dep.name + "\" % \"" + dep.version + (!dep.qualifier.equals("") ? "\" % \"" + dep.qualifier + "\"" : "\""));
+				result.add("libraryDependencies += \"" + dep.organization + "\" " + (dep.crossCompiled ? "%%" : "%") + " \"" + dep.name + "\" % \"" + dep.version + (!dep.qualifier.equals("") ? "\" % \"" + dep.qualifier + "\"" : "\"") + " " + dep.rest);
 			}
 		}
 		return result;
@@ -129,5 +126,20 @@ public class BuildSbtFile extends AbstractFile {
 			}
 		}
 		return result;
+	}
+	
+	private static int countBraces(String line) {
+		int count = 0;
+		for (int i = 0; i < line.length(); i++) {
+			if (line.charAt(i) == '(') count++;
+			else if (line.charAt(i) == ')') count--;
+		}
+		return count;
+	}
+	
+	private static String afterLast(String s, char c) {
+		int index = s.lastIndexOf(c);
+		if (index < 0) return "";
+		else return s.substring(index + 1);
 	}
 }

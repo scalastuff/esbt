@@ -20,6 +20,7 @@ import static org.scalastuff.esbt.Utils.indexOfLineContaining;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.eclipse.core.runtime.CoreException;
 
@@ -65,7 +66,11 @@ public class ClassPathFile extends AbstractFile {
 			line = lines.size();
 		}
 		boolean scalaContainer = indexOfLineContaining(lines, "SCALA_CONTAINER") != -1;
+		TreeMap<String, Dependency> sortedDeps = new TreeMap<String, Dependency>();
 		for (Dependency dep : deps) {
+			sortedDeps.put(dep.name, dep);
+		}
+		for (Dependency dep : sortedDeps.values()) {
 			if (scalaContainer && dep.name.equals("scala-library")) continue;
 			lines.add(line++, "\t<classpathentry from=\"sbt\" kind=\"lib\" path=\"" + dep.jar.trim() + "\"" + (!dep.srcJar.trim().isEmpty()? " sourcepath=\"" + dep.srcJar.trim() + "\"" : "") + "/>");
 		}

@@ -23,5 +23,6 @@ public class Dependency {
 	public String qualifier = "";
 	public String jar = "";
 	public String srcJar = "";
+	public String rest = "";
 	
 }
