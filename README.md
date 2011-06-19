@@ -6,6 +6,7 @@ Eclipse SBT Plugin
 
 - Based on SBT 0.10
 - automatically adds dependencies to .classpath
+- adds dependecy sources
 - resolves dependencies to workspace projects
 - excludes scala library when scala IDE is installed
 - non-intrusive: respects existing content in .classpath
@@ -17,9 +18,10 @@ Update site:
 
 	https://raw.github.com/scalastuff/updatesite/master
 
-# Notes
+# Release Notes
 
- - Custom scala source paths (other than e.g. /src/main/scala) or
-   not supported. The plugin doesn't get this information from SBT as of yet. 
-   Help on how to get this information from within an SBT plugin would be appreciated!
-   
+## 0.10.3
+
+- Added support for library sources
+- Dependencies are now ordered by name
+
