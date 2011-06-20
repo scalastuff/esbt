@@ -38,7 +38,7 @@ public class ClassPathFile extends AbstractFile {
   }
 	
 	public void write(Set<ProjectInfo> projectDeps, List<Dependency> deps) throws CoreException {
-		super.write(update(project, refresh(), projectDeps, deps));
+		super.doWrite(update(project, refresh(), projectDeps, deps));
 	}
 	
 	private static List<String> update(ProjectInfo project, List<String> lines, Set<ProjectInfo> projectDeps, List<Dependency> deps) {
