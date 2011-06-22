@@ -16,6 +16,8 @@
 package org.scalastuff.esbt;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -61,12 +63,13 @@ public class ProjectInfo {
 		return true;
 	}
 	
-	public void update(InvokeSbt sbt) throws CoreException {
+	public void update(InvokeSbt sbt) throws CoreException, FileNotFoundException, IOException {
 
 		// combine sbt project deps with sbt project deps
 		Set<ProjectInfo> projectDeps = sbtFile.getProjectDependencies();
 		List<Dependency> deps = new ArrayList<Dependency>();
 		for (Dependency dep : sbt.getDependencies()) {
+			CopyJars.copyJars(dep);
 			ProjectInfo depProject = WorkspaceInfo.findProject(dep.organization, dep.name, dep.version);
 			if (depProject != null) {
 				projectDeps.add(depProject);
