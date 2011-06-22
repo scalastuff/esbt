@@ -16,7 +16,6 @@
 package org.scalastuff.esbt;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,12 +29,14 @@ public class ProjectInfo {
 	private final IProject project;
 	private final BuildSbtFile sbtFile;
 	private final ClassPathFile classpathFile;
+	private final ManifestFile manifestFile;
 	
 
 	public ProjectInfo(IProject project) {
 		this.project = project;
 		this.sbtFile = new BuildSbtFile(this);
 		this.classpathFile = new ClassPathFile(this);
+		this.manifestFile = new ManifestFile(this);
 	}
 	
 	public IProject getProject() {
@@ -54,16 +55,21 @@ public class ProjectInfo {
 	  return classpathFile;
   }
 	
+	public ManifestFile getManifestFile() {
+	  return manifestFile;
+  }
+	
 	public boolean checkUpToDate() {
-		if (!sbtFile.isUpToDate() || !classpathFile.isUpToDate()) {
+		if (!sbtFile.isUpToDate() || !classpathFile.isUpToDate() || !manifestFile.isUpToDate()) {
 			sbtFile.refresh();
 			classpathFile.refresh();
+			manifestFile.refresh();
 			return false;
 		}
 		return true;
 	}
 	
-	public void update(InvokeSbt sbt) throws CoreException, FileNotFoundException, IOException {
+	public void update(InvokeSbt sbt) throws CoreException, IOException {
 
 		// combine sbt project deps with sbt project deps
 		Set<ProjectInfo> projectDeps = sbtFile.getProjectDependencies();
@@ -79,5 +85,6 @@ public class ProjectInfo {
 		}
 		
 		classpathFile.write(projectDeps, deps);
+		manifestFile.write(projectDeps, deps);
 	}
 }

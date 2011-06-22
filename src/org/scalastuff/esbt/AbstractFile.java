@@ -46,7 +46,7 @@ public class AbstractFile {
 		return lines;
 	}
 	
-	protected synchronized void write(List<String> lines) throws CoreException {
+	protected final synchronized void doWrite(List<String> lines) throws CoreException {
 		refresh();
 		if (!this.lines.equals(lines)) {
 			if (file.exists()) {
