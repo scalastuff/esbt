@@ -24,5 +24,7 @@ public class Dependency {
 	public String jar = "";
 	public String srcJar = "";
 	public String rest = "";
+	public String osgiSymbolicName;
+	public String osgiBundleVersion;
 	
 }

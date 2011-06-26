@@ -130,8 +130,8 @@ public class Processor extends Job {
 		Utils.write(new FileOutputStream(new File(dir, "build.sbt")), sbtFile);
 		
 		// copy Build.scala
-		File srcBuildScala = new File(dir, "project/Build.scala");
-		File destBuildScala = new File(project.getProjectDir(), "project/Build.scala");
+		File srcBuildScala = new File(project.getProjectDir(), "project/Build.scala");
+		File destBuildScala = new File(dir, "project/Build.scala");
 		if (srcBuildScala.exists()) {
 			Utils.copyStream(new FileInputStream(srcBuildScala), new FileOutputStream(destBuildScala));
 		} else {

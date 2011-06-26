@@ -117,4 +117,33 @@ public class Utils {
 		}
 		return builder.toString();
 	}
+	
+	public static String qname(String organization, String name, String version, String qualifier) {
+		String common = "";
+		for (int i = organization.length() - 1; i >= -1; i--) {
+			if (i < 0 || organization.charAt(i) == '.') {
+				common = organization.substring(i + 1);
+				break;
+			}
+		}
+		if (name.equals(common) || name.startsWith(common + ".")) {
+			name = name.substring(common.length());
+		}
+		if (organization.endsWith("." + common)) {
+			organization = organization.substring(0, organization.length() - common.length() - 1);
+		}
+		if (name.startsWith("-")) {
+			name = name.substring(1);
+		}
+		if (!name.equals("") && !name.startsWith(".")) {
+			name = "." + name;
+		}
+		if (!version.equals("") && !version.startsWith("-")) {
+			version = "-" + version;
+		}
+		if (!qualifier.equals("") && !qualifier.startsWith("-")) {
+			qualifier = "-" + qualifier;
+		}
+		return organization + name + version + qualifier;
+	}
 }
