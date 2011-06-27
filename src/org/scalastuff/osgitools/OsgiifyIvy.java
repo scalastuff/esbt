@@ -13,8 +13,8 @@ public class OsgiifyIvy {
 		osgiifyIvy(new File(ivyHome, "cache"), targetDir, release);
 	}
 	
-	public static void osgiify(File sourceFile, String symbolicName, String version, boolean release) throws IOException {
-		Osgiify.osgiify(sourceFile, symbolicName, version, targetDir, release);
+	public static File osgiify(File sourceFile, String symbolicName, String version, boolean release) throws IOException {
+		return Osgiify.osgiify(sourceFile, symbolicName, version, targetDir, release);
 	}
 
 	public static void osgiifyIvy(File ivyDir, File targetDir, boolean release) throws IOException {

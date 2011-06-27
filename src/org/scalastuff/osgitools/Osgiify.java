@@ -17,12 +17,16 @@ import org.scalastuff.esbt.Utils;
 public class Osgiify {
 
 	public static File osgiify(File sourceFile, String symbolicName, String version, File targetDir, boolean release) throws IOException {
+		
 		if (!targetDir.exists()) {
 			targetDir.mkdirs();
 		}
 		
+		// version should contain dots only
+		version = version.replace('-', '.');
+		
 		// construct targetFile
-		File targetFile = new File(targetDir, symbolicName + "-" + version + "-" + ".jar");
+		File targetFile = new File(targetDir, symbolicName + "-" + version + ".jar");
 
 		// if target file exists and is up to date, we're done
 		if (targetFile.exists() && sourceFile.lastModified() == targetFile.lastModified()) {
@@ -35,7 +39,7 @@ public class Osgiify {
 			if (manifest != null) {
 
 				// prevent overwrite released bundles
-				if (targetFile.exists() && release && !version.endsWith("-SNAPSHOT")) {
+				if (targetFile.exists() && release && !version.endsWith("SNAPSHOT")) {
 					return targetFile;
 				}
 			} else {

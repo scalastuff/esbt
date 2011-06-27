@@ -64,42 +64,22 @@ public class ManifestFile extends AbstractFile {
 		// add direct dependencies
 		List<String> depLines = new ArrayList<String>();
 		for (Dependency dep : project.getSbtFile().getLibraryDependencies()) {
-			depLines.add(dep.organization + "." + dep.name + ";bundle-version=\"" + dep.version + "\""+(embedDependencies ? ";visibility:=reexport" : ""));
+			String version = dep.version.replace('-', '.');
+			String symbolicName = dep.organization + "." + dep.name;
+
+			depLines.add(symbolicName + ";bundle-version=\"" + version + "\""+(embedDependencies ? ";visibility:=reexport" : ""));
 		}
 		
 		// copy dep extent into osgi dir
 		for (Dependency dep : deps) {
 			OsgiifyIvy.osgiify(new File(dep.jar), dep.organization + "." + dep.name, dep.version, false);
 		}
-		
-		for (Dependency dep : deps) {
-			boolean depFound = false;
-			for (ProjectInfo prjDep : projectDeps) {
-				if (checkDepJar(prjDep.getProjectDir(), dep)) {
-					depLines.add(dep.osgiSymbolicName + ";bundle-version=\"" + dep.osgiBundleVersion + "\""+(embedDependencies ? ";visibility:=reexport" : ""));
-					depFound = true;
-					break;
-				}
-			}
-			if (!depFound) {
-				if (checkDepJar(new File(dep.jar), dep)) {
-					depLines.add(dep.osgiSymbolicName + ";bundle-version=\"" + dep.osgiBundleVersion + "\""+(embedDependencies ? ";visibility:=reexport" : ""));
-					depFound = true;
-				}
-			}
-			if (!depFound && embedDependencies) {
-				File lib = new File(project.getProjectDir(), "lib");
-				lib.mkdirs();
-				Utils.copyStream(new FileInputStream(dep.jar), new FileOutputStream(new File(lib, "embedded." + Utils.qname(dep.organization, dep.name, dep.version, dep.qualifier) + ".jar")));
-				libDir.refreshLocal(0, null);
-			}
-		}
-		libDir.refreshLocal(1, null);
 		set(lines, "Require-Bundle", depLines, true);
 		
 		// add libs
 		List<String> cp = new ArrayList<String>();
 		cp.add(".");
+		libDir.refreshLocal(1, null);
 		if (libDir.exists()) {
 			for (IResource resource : libDir.members()) {
 				if (resource.getName().endsWith(".jar")) {
