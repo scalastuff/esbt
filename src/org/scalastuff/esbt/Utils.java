@@ -146,4 +146,10 @@ public class Utils {
 		}
 		return organization + name + version + qualifier;
 	}
+	
+	
+	public static String orElse(String s, String alt) {
+		if (s != null) return s;
+		else return alt;
+	}
 }

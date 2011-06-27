@@ -40,6 +40,7 @@ public class CopyJars {
 				|| source.length() != dest.lastModified()) {
 			try {
 				Utils.copyStream(new FileInputStream(source), new FileOutputStream(dest));
+				dest.setLastModified(source.lastModified());
 				break;
 			} catch (IOException e) {
 				if (attempt++ > 50) {

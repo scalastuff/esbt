@@ -17,6 +17,7 @@ import java.util.jar.Manifest;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.scalastuff.osgitools.OsgiifyIvy;
 
 public class ManifestFile extends AbstractFile {
 
@@ -59,8 +60,18 @@ public class ManifestFile extends AbstractFile {
 				}
 			}
 		}
-		
+
+		// add direct dependencies
 		List<String> depLines = new ArrayList<String>();
+		for (Dependency dep : project.getSbtFile().getLibraryDependencies()) {
+			depLines.add(dep.organization + "." + dep.name + ";bundle-version=\"" + dep.version + "\""+(embedDependencies ? ";visibility:=reexport" : ""));
+		}
+		
+		// copy dep extent into osgi dir
+		for (Dependency dep : deps) {
+			OsgiifyIvy.osgiify(new File(dep.jar), dep.organization + "." + dep.name, dep.version, false);
+		}
+		
 		for (Dependency dep : deps) {
 			boolean depFound = false;
 			for (ProjectInfo prjDep : projectDeps) {
