@@ -15,7 +15,7 @@
  */
 package org.scalastuff.esbt;
 
-import static org.scalastuff.esbt.Utils.copyStream;
+import static org.scalastuff.esbt.Utils.copy;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -162,7 +162,7 @@ public class InvokeSbt {
 				console.println("Coulnd't find sbt-launch.jar");
 			}
 			OutputStream os = new FileOutputStream(launchJar);
-			copyStream(is, os);
+			copy(is, os);
 			InvokeSbt.launchJar = launchJar;
 		}
 		return launchJar;

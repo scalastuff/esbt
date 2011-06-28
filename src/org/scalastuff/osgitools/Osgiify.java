@@ -48,7 +48,7 @@ public class Osgiify {
 			
 			if (symbolicName.equals(getValue(manifest, "Bundle-SymbolicName"))
 	  	&&  version.equals(getValue(manifest, "Bundle-Version"))) {
-	  		Utils.copyStream(new FileInputStream(sourceFile), new FileOutputStream(targetFile));
+	  		Utils.copy(new FileInputStream(sourceFile), new FileOutputStream(targetFile));
 	  		return targetFile;
 			} else {
 				manifest.getMainAttributes().putValue("Bundle-SymbolicName", symbolicName);

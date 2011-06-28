@@ -69,12 +69,12 @@ public class ProjectInfo {
 		return true;
 	}
 	
-	public void update(InvokeSbt sbt) throws CoreException, IOException {
+	public void update(List<Dependency> dependencies) throws CoreException, IOException {
 
 		// combine sbt project deps with sbt project deps
 		Set<ProjectInfo> projectDeps = sbtFile.getProjectDependencies();
 		List<Dependency> deps = new ArrayList<Dependency>();
-		for (Dependency dep : sbt.getDependencies()) {
+		for (Dependency dep : dependencies) {
 			CopyJars.copyJars(dep);
 			ProjectInfo depProject = WorkspaceInfo.findProject(dep.organization, dep.name, dep.version);
 			if (depProject != null) {

@@ -15,14 +15,17 @@
  */
 package org.scalastuff.esbt;
 
+import static org.scalastuff.esbt.Utils.copy;
+
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -105,7 +108,8 @@ public class Processor extends Job {
 		if (project.getSbtFile().exists()) {
 			console.activate();
 			console.println("");
-			console.println("****** Processing Project: " + project.getSbtFile().getName());
+			console.println("------ Processing project: " + project.getSbtFile().getName() + " ------");
+			long start = System.currentTimeMillis();
 			InvokeSbt sbt = new InvokeSbt(project, console);		
 			if (command != null) {
 				sbt.setCommand(command);
@@ -113,30 +117,64 @@ public class Processor extends Job {
 				sbt.invokeSbt();
 			} else {
 				SbtPluginCreator.createSbtPlugin();
-				sbt.setProjectDir(cloneProjectDir(project));
+				File projectDir = cloneProjectDir(project);
+				sbt.setProjectDir(projectDir);
 				sbt.invokeSbt();
-				project.update(sbt);
+				project.update(sbt.getDependencies());
 			}
+			console.println("----- Done (" + (System.currentTimeMillis() - start) + " ms)------");
 		}
 	}
 
 	private File cloneProjectDir(ProjectInfo project) throws FileNotFoundException, IOException {
 
+		if (!project.getSbtFile().hasProjectDependencies()) {
+			return project.getProjectDir();
+		}
+
 		// create build.sbt
 		File dir = new File(WorkspaceInfo.getMetaDataDir(), "tmpprj");
+		copyProjectDir(new File(project.getProjectDir(), "project"), new File(dir, "project"));
+		
+		// write customized build.sbt
 		dir.mkdirs();
 		project.getSbtFile().refresh();
 		List<String> sbtFile = project.getSbtFile().getContentWithoutProjectDependencies();
 		Utils.write(new FileOutputStream(new File(dir, "build.sbt")), sbtFile);
 		
-		// copy Build.scala
-		File srcBuildScala = new File(project.getProjectDir(), "project/Build.scala");
-		File destBuildScala = new File(dir, "project/Build.scala");
-		if (srcBuildScala.exists()) {
-			Utils.copyStream(new FileInputStream(srcBuildScala), new FileOutputStream(destBuildScala));
-		} else {
-			destBuildScala.delete();
-		}
 		return dir;
+	}	
+	
+	private static void copyProjectDir(File source, File dest) throws IOException {
+		if (source.isDirectory()) {
+			Set<String> sourceChildren = new HashSet<String>();
+			for (File child : source.listFiles()) {
+				sourceChildren.add(child.getName());
+				copyProjectDir(child, new File(dest, child.getName()));
+			}
+			if (dest.isDirectory()) {
+				for (File destChild : dest.listFiles()) {
+					if (!sourceChildren.contains(destChild.getName())) {
+						deleteAll(destChild);
+					}
+				}
+			}
+		}
+		else if (source.isFile()) {
+			if (source.getName().endsWith(".sbt") || source.getName().endsWith(".scala") || source.getName().endsWith(".properties") || source.getName().endsWith(".xml")) {
+				source.getParentFile().mkdirs();
+				copy(source, dest, true);
+			}
+		}
+	}
+	
+	private static void deleteAll(File file) {
+		if (file.isDirectory()) {
+			for (File child : file.listFiles()) {
+				deleteAll(child);
+			}
+		} else {
+			file.delete();
+		}
 	}
 }

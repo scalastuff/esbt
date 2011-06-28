@@ -32,7 +32,7 @@ public class ManifestFile extends AbstractFile {
 		
 		List<String> lines = new ArrayList<String>(getContent());
 		
-		if (!isTrue(lines, "Generate-From-SBT")) return deps;
+		if (!isTrue(lines, "Allow-ESBT")) return deps;
 		
 		for (int i = lines.size() - 1; i >= 0; i--) {
 			String line = lines.get(i).trim();
@@ -44,7 +44,7 @@ public class ManifestFile extends AbstractFile {
 		boolean embedDependencies = isTrue(lines, "Embed-Dependencies");
 		
 		
-		set(lines, "Generate-From-SBT", asList("true"), true);
+		set(lines, "Allow-ESBT", asList("true"), true);
 		set(lines, "Bundle-ManifestVersion", asList("2"), false);
 		set(lines, "Bundle-ManifestVersion", asList("2"), false);
 		set(lines, "Bundle-Name", asList(project.getSbtFile().getName()), true);

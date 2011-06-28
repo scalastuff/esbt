@@ -38,8 +38,10 @@ public class BuildSbtFile extends AbstractFile {
 		for (int i = 0; i < getContent().size(); i++) {
 			String line = getContent().get(i);
 			if (line.trim().startsWith("libraryDependencies")) {
-				for (int braces = countBraces(line), j = 0; braces > 0 && i < getContent().size(); i++, j++) {
-					if (j > 0) line = line + getContent().get(i);
+				for (int j = 0; countBraces(line) > 0 && i < getContent().size(); i++, j++) {
+					if (j > 0) {
+						line = line + getContent().get(i);
+					}
 				}
 				
 				String[] depStrings = line.split(",");
@@ -55,6 +57,15 @@ public class BuildSbtFile extends AbstractFile {
 		}
 		return result;
 	}	
+	
+	public boolean hasProjectDependencies() {
+		for (Dependency dep : getLibraryDependencies()) {
+			if (WorkspaceInfo.findProject(dep.organization, dep.name, dep.version) != null) {
+				return true;
+			}
+		}
+		return false;
+	}
 
 	public static Dependency getLibraryDependency(String depString) {
 		List<String> values = readStrings(depString);
@@ -77,8 +88,10 @@ public class BuildSbtFile extends AbstractFile {
 		for (int i = 0; i < getContent().size(); i++) {
 			String line = getContent().get(i);
 			if (line.trim().startsWith("libraryDependencies")) {
-				for (int braces = countBraces(line); braces > 0 && i < getContent().size(); i++) {
-					line = line + getContent().get(i);
+				for (int j = 0; countBraces(line) > 0 && i < getContent().size(); i++, j++) {
+					if (j > 0) {
+						line = line + getContent().get(i);
+					}
 				}
 			} else {
 				result.add(line);

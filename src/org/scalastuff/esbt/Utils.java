@@ -20,6 +20,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -84,8 +85,15 @@ public class Utils {
 			os.close();
 		}
 	}
+
+	public static void copy(File in, File out, boolean preserveTimestamp) throws IOException {
+		copy(new FileInputStream(in), new FileOutputStream(out));
+		if (preserveTimestamp) {
+			out.setLastModified(in.lastModified());
+		}
+	}
 	
-	public static void copyStream(InputStream is, OutputStream os) throws IOException {
+	public static void copy(InputStream is, OutputStream os) throws IOException {
 		try {
 			byte[] b = new byte[2000];
 			int read;
@@ -146,7 +154,6 @@ public class Utils {
 		}
 		return organization + name + version + qualifier;
 	}
-	
 	
 	public static String orElse(String s, String alt) {
 		if (s != null) return s;

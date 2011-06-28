@@ -20,6 +20,13 @@ Update site:
 
 # Release Notes
 
+## 0.10.7
+
+- Fixed bug with incomplete projects being copied to tmp dir
+- Only copy project dir when needed (when project dependencies are detected)
+- Robust against jar files locked by eclipse
+- Provisional OSGi support (create META-INF/MANIFEST.MF with line Allow-ESBT: true)
+
 ## 0.10.3
 
 - Added support for library sources

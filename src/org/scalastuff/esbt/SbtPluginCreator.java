@@ -31,7 +31,7 @@ public class SbtPluginCreator {
 	
 	public static void createSbtPlugin() throws IOException {
 		userHome = new File(System.getProperty("user.home"));
-		File pluginDir = new File(userHome, ".sbt/plugins");
+		File pluginDir = new File(userHome, ".esbt/plugins");
 		pluginDir.mkdirs();
 		createBuildSbt(pluginDir);
 		createSbtEclipsePluginFile(pluginDir);
