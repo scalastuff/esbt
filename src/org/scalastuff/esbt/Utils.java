@@ -87,6 +87,9 @@ public class Utils {
 	}
 
 	public static void copy(File in, File out, boolean preserveTimestamp) throws IOException {
+		if (out.exists() && in.length() == out.length() && in.lastModified() == out.lastModified()) {
+			return;
+		}
 		copy(new FileInputStream(in), new FileOutputStream(out));
 		if (preserveTimestamp) {
 			out.setLastModified(in.lastModified());

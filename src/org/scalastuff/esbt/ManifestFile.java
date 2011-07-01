@@ -1,12 +1,12 @@
 package org.scalastuff.esbt;
 
-import static java.util.Arrays.asList;
+import static org.scalastuff.esbt.Utils.copy;
 import static org.scalastuff.esbt.Utils.qname;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -14,19 +14,28 @@ import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
-import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.scalastuff.osgitools.OsgiManifest;
+import org.scalastuff.osgitools.OsgiManifest.Attribute;
+import org.scalastuff.osgitools.OsgiManifest.Value;
 import org.scalastuff.osgitools.OsgiifyIvy;
 
 public class ManifestFile extends AbstractFile {
 
 	private final ProjectInfo project;
-
+	private OsgiManifest manifest;
+	
 	protected ManifestFile(ProjectInfo project) {
 	  super(project.getProject().getFile("META-INF/MANIFEST.MF"));
 		this.project = project;
   }
+	
+	@Override
+	protected void setLines(List<String> lines) {
+		super.setLines(lines);
+		manifest = OsgiManifest.read(lines);
+		int i =0;
+	}
 
 	public List<Dependency> write(Set<ProjectInfo> projectDeps, List<Dependency> deps) throws CoreException, IOException {
 		
@@ -43,58 +52,66 @@ public class ManifestFile extends AbstractFile {
 		
 		boolean embedDependencies = isTrue(lines, "Embed-Dependencies");
 		
-		
-		set(lines, "Allow-ESBT", asList("true"), true);
-		set(lines, "Bundle-ManifestVersion", asList("2"), false);
-		set(lines, "Bundle-ManifestVersion", asList("2"), false);
-		set(lines, "Bundle-Name", asList(project.getSbtFile().getName()), true);
-		set(lines, "Bundle-SymbolicName", asList(getSymbolicName()), true);
-		set(lines, "Bundle-Version", asList(getVersion()), true);
-		
-		// remove old libs
-		IFolder libDir = project.getProject().getProject().getFolder("lib");
-		if (libDir.exists()) {
-			for (IResource resource : libDir.members()) {
-				if (resource.getName().startsWith("embedded.")) {
-					resource.delete(true, null);
-				}
-			}
-		}
+		manifest.getAttribute("Allow-ESBT").setValue("true");
+		manifest.getAttribute("Bundle-ManifestVersion").setValue("2", false);
+		manifest.getAttribute("Bundle-Name").setValue(project.getSbtFile().getName());
+		manifest.getAttribute("Bundle-SymbolicName").setValue(getSymbolicName());
+		manifest.getAttribute("Bundle-Version").setValue(getVersion());
+
 
 		// add direct dependencies
 		List<String> depLines = new ArrayList<String>();
+		Attribute requireBundles = manifest.getAttribute("Require-Bundle");
 		for (Dependency dep : project.getSbtFile().getLibraryDependencies()) {
 			String version = dep.version.replace('-', '.');
 			String symbolicName = dep.organization + "." + dep.name;
-
-			depLines.add(symbolicName + ";bundle-version=\"" + version + "\""+(embedDependencies ? ";visibility:=reexport" : ""));
+			Value value = requireBundles.addUnique(symbolicName);
+			value.setAnnotation("bundle-version", version);
+//			depLines.add(symbolicName + ";bundle-version=\"" + version + "\""+(embedDependencies ? ";visibility:=reexport" : ""));
 		}
+		
+		// remove org.osgi.core
+		requireBundles.removeValue("org.osgi.core");
+		Attribute importPackage = manifest.getAttribute("Import-Package");
+		importPackage.addUnique("org.osgi.framework");
+		
 		
 		// copy dep extent into osgi dir
 		for (Dependency dep : deps) {
 			OsgiifyIvy.osgiify(new File(dep.jar), dep.organization + "." + dep.name, dep.version, false);
 		}
-		set(lines, "Require-Bundle", depLines, true);
-		
-		// add libs
-		List<String> cp = new ArrayList<String>();
-		cp.add(".");
-		libDir.refreshLocal(1, null);
-		if (libDir.exists()) {
-			for (IResource resource : libDir.members()) {
-				if (resource.getName().endsWith(".jar")) {
-					cp.add("lib/" + resource.getName());
+		// copy eclipse.osgi bundles
+		File pluginsDir = new File(new File(URI.create(System.getProperty("eclipse.home.location"))), "plugins");
+		if (pluginsDir.isDirectory()) {
+			for (File jar : pluginsDir.listFiles()) {
+				if (jar.getName().startsWith("org.eclipse.osgi.") && jar.getName().endsWith(".jar")) {
+					copy(jar, new File(OsgiifyIvy.targetDir, jar.getName()), true);
 				}
 			}
 		}
-		set(lines, "Bundle-ClassPath", cp, true);
+
+		set(lines, "Require-Bundle", depLines, true);
 		
-		super.doWrite(lines);
+		// add libs
+//		List<String> cp = new ArrayList<String>();
+//		cp.add(".");
+//		libDir.refreshLocal(1, null);
+//		if (libDir.exists()) {
+//			for (IResource resource : libDir.members()) {
+//				if (resource.getName().endsWith(".jar")) {
+//					cp.add("lib/" + resource.getName());
+//				}
+//			}
+//		}
+//		set(lines, "Bundle-ClassPath", cp, true);
+//		super.doWrite(asList(manifest.toString(",\n  ", new StringBuilder()).toString().split("\n")));
+		super.doWrite(manifest.write());
+//		super.doWrite(lines);
 		return deps;
 	}
 
 	private String getVersion() {
-	  return project.getSbtFile().getVersion();
+	  return project.getSbtFile().getVersion().replace('-', '.');
   }
 
 	private String getSymbolicName() {

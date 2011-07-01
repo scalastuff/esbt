@@ -35,15 +35,19 @@ public class AbstractFile {
 	public synchronized List<String> refresh() {
 		try {
 	    file.refreshLocal(IFile.DEPTH_INFINITE, null);
-	    lines = Utils.read(file);
+	    setLines(Utils.read(file));
     } catch (CoreException e) {
-    	lines = Collections.emptyList();
+			setLines(Collections.<String>emptyList());
     }
 		return lines;
 	}
 	
 	public synchronized List<String> getContent() {
 		return lines;
+	}
+	
+	protected void setLines(List<String> lines) {
+		this.lines = lines;
 	}
 	
 	protected final synchronized void doWrite(List<String> lines) throws CoreException {
@@ -54,7 +58,7 @@ public class AbstractFile {
 			} else {
 				file.create(Utils.linesInputStream(lines), 0, null);
 			}
-			this.lines = lines;
+			setLines(lines);
 		}
 	}
 }

@@ -7,7 +7,7 @@ public class OsgiifyIvy {
 
 	private static final File userHome = new File(System.getProperty("user.home"));
 	private static final File ivyHome = new File(userHome, ".ivy2");
-	private static final File targetDir = new File(ivyHome, "osgi");
+	public static final File targetDir = new File(ivyHome, "osgi");
 	
 	public static void osgiifyIvy(boolean release) throws IOException {
 		osgiifyIvy(new File(ivyHome, "cache"), targetDir, release);
