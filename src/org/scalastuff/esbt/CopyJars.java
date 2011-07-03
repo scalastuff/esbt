@@ -27,7 +27,7 @@ public class CopyJars {
 	
 	private static String copyFile(Dependency dep, String file) throws FileNotFoundException, IOException {
 		if (!file.trim().isEmpty()) {
-			return copyFile(new File(dep.jar), new File(getJarsDir(), dep.organization + "-" + new File(file).getName())).getCanonicalPath();
+			return copyFile(new File(file), new File(getJarsDir(), dep.organization + "-" + new File(file).getName())).getCanonicalPath();
 		}
 		return file;
 	}
