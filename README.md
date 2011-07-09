@@ -1,4 +1,3 @@
-
 Eclipse SBT Plugin
 ==================
 
@@ -7,16 +6,24 @@ Eclipse SBT Plugin
 - Based on SBT 0.10
 - automatically adds dependencies to .classpath
 - adds dependency sources
-- resolves dependencies to workspace projects
+- resolves dependencies between workspace projects
 - excludes scala library when scala IDE is installed
 - non-intrusive: respects existing content in .classpath
 - graceful: no menu entries are shown when project doesn't contain build.sbt
+- smart copying of jars to allow updating locked jars
 
 # Installation
 
 Update site:
 
 	https://raw.github.com/scalastuff/updatesite/master
+
+# Usage
+
+Add a build.sbt file to your project. Any change to this file will trigger esbt to update project dependencies. 
+One can manually trigger the update by choosing "SBT Update Dependencies" from the project context menu.
+
+One can issue an SBT command by choosing "SBT Command..." from the project context menu.
 
 # Release Notes
 
