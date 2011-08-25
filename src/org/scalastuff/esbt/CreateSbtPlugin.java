@@ -25,13 +25,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
-public class SbtPluginCreator {
+public class CreateSbtPlugin {
 	
-	private static File userHome;
+	public static final File PLUGIN_HOME = Esbt.USER_HOME;
 	
 	public static void createSbtPlugin() throws IOException {
-		userHome = new File(System.getProperty("user.home"));
-		File pluginDir = new File(userHome, ".esbt/plugins");
+		File pluginDir = new File(PLUGIN_HOME, ".sbt/plugins");
 		pluginDir.mkdirs();
 		createBuildSbt(pluginDir);
 		createSbtEclipsePluginFile(pluginDir);
@@ -51,7 +50,7 @@ public class SbtPluginCreator {
 	}
 	
 	private static void createSbtEclipsePluginFile(File pluginDir) throws IOException {
-		InputStream is = SbtPluginCreator.class.getResourceAsStream("SbtEclipsePlugin.scala.source");
+		InputStream is = CreateSbtPlugin.class.getResourceAsStream("SbtEclipsePlugin.scala.source");
 		if (is == null) {
 			throw new IOException("Coulnd't find SbtEclipsePlugin.scala.source");
 		}

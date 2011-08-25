@@ -48,8 +48,10 @@ public class Processor extends Job {
 	  setPriority(Job.LONG);
 	  List<ISchedulingRule> rules = new ArrayList<ISchedulingRule>();
 	  for (ProjectInfo prg : WorkspaceInfo.getAllProjects()) {
-	  	if (prg.getSbtFile().exists()) {
-	  		rules.add(prg.getSbtFile().getFile());
+	  	if (prg.isSbtProject()) {
+	  		for (FileContent file : prg.getSbtFiles()) {
+	  			rules.add(file.getFile());
+	  		}
 	  	}
 	  	if (prg.getClassPathFile().exists()) {
 	  		rules.add(prg.getClassPathFile().getFile());
@@ -66,27 +68,32 @@ public class Processor extends Job {
 		this.command = command;
 	}
 	
-	private Collection<ProjectInfo> pullModifiedProjects() throws CoreException, IOException {
-		List<ProjectInfo> projects2 = projects;
-		projects = null;
-		return projects2 != null ? 
-				projects2 :
-			WorkspaceInfo.pullModifiedProjects();
-	}
-	
 	@Override
 	protected IStatus run(IProgressMonitor monitor) {
 		synchronized (Processor.class) {
 			try {
 				try {
-					while (true) {
-						Collection<ProjectInfo> modifiedProjects = pullModifiedProjects();
-						if (modifiedProjects.isEmpty()) return Status.OK_STATUS;
-						console = new Console();
-						for (ProjectInfo modifiedSbtProject : modifiedProjects) {
-							process(modifiedSbtProject);
+					boolean force = false;
+					Collection<ProjectInfo> projects = this.projects;
+					if (projects == null) {
+						projects = new ArrayList<ProjectInfo>(WorkspaceInfo.getAllProjects());
+					} else {
+						force = true;
+						projects = new ArrayList<ProjectInfo>(projects);
+					}
+					CreateSbtPlugin.createSbtPlugin();
+					console = new Console();
+					for (ProjectInfo project : projects) {
+						process(project, force);
+					}
+					if (command == null) {
+						for (ProjectInfo project : WorkspaceInfo.getAllProjects()) {
+							if (project.isSbtProject()) {
+								project.checkProjectDependencies();
+							}
 						}
 					}
+					return Status.OK_STATUS;
 				} catch (Throwable t) {
 					return new Status(Status.ERROR, PLUGIN_ID, t.getMessage(), t);
 				}
@@ -104,77 +111,20 @@ public class Processor extends Job {
 		}
 	}
 	
-	private void process(ProjectInfo project) throws IOException, CoreException {
-		if (project.getSbtFile().exists()) {
-			console.activate();
-			console.println("");
-			console.println("------ Processing project: " + project.getSbtFile().getName() + " ------");
+	private void process(ProjectInfo project, boolean force) throws IOException, CoreException {
+		if (project.isSbtProject()) {
 			long start = System.currentTimeMillis();
-			InvokeSbt sbt = new InvokeSbt(project, console);		
 			if (command != null) {
-				sbt.setCommand(command);
+				InvokeSbt sbt = new InvokeSbt(project, command, console);		
+				console.activate();
+				console.println("");
+				console.println("------ Processing project: " + project.getProject().getName() + " ------");
 				sbt.setProjectDir(project.getProjectDir());
 				sbt.invokeSbt();
+				console.println("----- Done (" + (System.currentTimeMillis() - start) + " ms)------");
 			} else {
-				SbtPluginCreator.createSbtPlugin();
-				File projectDir = cloneProjectDir(project);
-				sbt.setProjectDir(projectDir);
-				sbt.invokeSbt();
-				project.update(sbt.getDependencies());
+				project.updateProject(force, console);
 			}
-			console.println("----- Done (" + (System.currentTimeMillis() - start) + " ms)------");
-		}
-	}
-
-	private File cloneProjectDir(ProjectInfo project) throws FileNotFoundException, IOException {
-
-		if (!project.getSbtFile().hasProjectDependencies()) {
-			return project.getProjectDir();
-		}
-
-		// create build.sbt
-		File dir = new File(WorkspaceInfo.getMetaDataDir(), "tmpprj");
-		copyProjectDir(new File(project.getProjectDir(), "project"), new File(dir, "project"));
-		
-		// write customized build.sbt
-		dir.mkdirs();
-		project.getSbtFile().refresh();
-		List<String> sbtFile = project.getSbtFile().getContentWithoutProjectDependencies();
-		Utils.write(new FileOutputStream(new File(dir, "build.sbt")), sbtFile);
-		
-		return dir;
-	}	
-	
-	private static void copyProjectDir(File source, File dest) throws IOException {
-		if (source.isDirectory()) {
-			Set<String> sourceChildren = new HashSet<String>();
-			for (File child : source.listFiles()) {
-				sourceChildren.add(child.getName());
-				copyProjectDir(child, new File(dest, child.getName()));
-			}
-			if (dest.isDirectory()) {
-				for (File destChild : dest.listFiles()) {
-					if (!sourceChildren.contains(destChild.getName())) {
-						deleteAll(destChild);
-					}
-				}
-			}
-		}
-		else if (source.isFile()) {
-			if (source.getName().endsWith(".sbt") || source.getName().endsWith(".scala") || source.getName().endsWith(".properties") || source.getName().endsWith(".xml")) {
-				source.getParentFile().mkdirs();
-				copy(source, dest, true);
-			}
-		}
-	}
-	
-	private static void deleteAll(File file) {
-		if (file.isDirectory()) {
-			for (File child : file.listFiles()) {
-				deleteAll(child);
-			}
-		} else {
-			file.delete();
 		}
 	}
 }

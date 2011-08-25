@@ -22,7 +22,7 @@ public class EsbtPropertyTester extends PropertyTester {
 	@Override
 	public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
 		ProjectInfo project = WorkspaceInfo.adaptToProject(receiver);
-		return project  != null && project.getSbtFile().exists();
+		return project  != null && project.isSbtProject();
 	}
 
 }

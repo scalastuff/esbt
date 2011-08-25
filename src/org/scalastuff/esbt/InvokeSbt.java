@@ -32,22 +32,19 @@ public class InvokeSbt {
 
 	private static File launchJar;
 	private final Console console;
-	private final List<Dependency> dependencies = new ArrayList<Dependency>();
+	private final List<String> result = new ArrayList<String>();
 	private boolean error;
 	private String command = "update-eclipse";
 	private File projectDir;
 	
-	public InvokeSbt(ProjectInfo project, Console console) {
-		this.console = console;
+	public InvokeSbt(ProjectInfo project, String command, Console console) {
 		this.projectDir = project.getProjectDir();
+		this.command = command;
+		this.console = console;
 	}
 
 	public String getCommand() {
 		return command;
-	}
-	
-	public void setCommand(String command) {
-		this.command = command;
 	}
 	
 	public File getProjectDir() {
@@ -67,9 +64,9 @@ public class InvokeSbt {
 		return error;
 	}
 	
-	public List<Dependency> getDependencies() {
-		return dependencies;
-	}
+	public List<String> getResult() {
+	  return result;
+  }
 
 	private Process createProcess(File projectDir) throws IOException  {
 		
@@ -82,6 +79,7 @@ public class InvokeSbt {
 		ArrayList<String> args = new ArrayList<String>();
 		args.add(javaExec.toString());
 		args.add("-Dsbt.log.noformat=true");
+		args.add("-Duser.home=" + CreateSbtPlugin.PLUGIN_HOME);
 		args.add("-jar");
 		args.add(getLaunchJar().toString());
 		args.addAll(parseCommand(command));
@@ -122,6 +120,8 @@ public class InvokeSbt {
 		BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
 		String line;
 
+		result.clear();
+		
 		// make sure process does not wait for input
 		process.getOutputStream().close();
 		while ((line = br.readLine()) != null) {
@@ -131,25 +131,12 @@ public class InvokeSbt {
 			
 			// detect result
 			else if (line.startsWith("[result]")) {
-				String[] fields = line.split("::");
-				if (fields[0].contains("dependency")) {
-					Dependency dependency = new Dependency();
-					for (int i = 1; i < fields.length; i++) {
-						switch (i) {
-						case 1: dependency.organization = fields[i].trim(); break;
-						case 2: dependency.name = fields[i].trim(); break;
-						case 3: dependency.version = fields[i].trim(); break;
-						case 4: dependency.jar = fields[i].trim(); break;
-						case 5: dependency.srcJar = fields[i].trim(); break;
-						}
-					}
-					dependencies.add(dependency);
-				}
+				result.add(line.substring("[result]".length()).trim());
 			} else {
 				if (line.startsWith("[error]")) {
 					error = true;
 				}
-					console.println(line);
+			console.println(line);	
 			}
 		}
 	}

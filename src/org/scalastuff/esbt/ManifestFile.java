@@ -20,7 +20,7 @@ import org.scalastuff.osgitools.OsgiManifest.Attribute;
 import org.scalastuff.osgitools.OsgiManifest.Value;
 import org.scalastuff.osgitools.OsgiifyIvy;
 
-public class ManifestFile extends AbstractFile {
+public class ManifestFile extends FileContent {
 
 	private final ProjectInfo project;
 	private OsgiManifest manifest;
@@ -34,7 +34,6 @@ public class ManifestFile extends AbstractFile {
 	protected void setLines(List<String> lines) {
 		super.setLines(lines);
 		manifest = OsgiManifest.read(lines);
-		int i =0;
 	}
 
 	public List<Dependency> write(Set<ProjectInfo> projectDeps, List<Dependency> deps) throws CoreException, IOException {
@@ -54,7 +53,7 @@ public class ManifestFile extends AbstractFile {
 		
 		manifest.getAttribute("Allow-ESBT").setValue("true");
 		manifest.getAttribute("Bundle-ManifestVersion").setValue("2", false);
-		manifest.getAttribute("Bundle-Name").setValue(project.getSbtFile().getName());
+		manifest.getAttribute("Bundle-Name").setValue(project.getName());
 		manifest.getAttribute("Bundle-SymbolicName").setValue(getSymbolicName());
 		manifest.getAttribute("Bundle-Version").setValue(getVersion());
 
@@ -62,7 +61,7 @@ public class ManifestFile extends AbstractFile {
 		// add direct dependencies
 		List<String> depLines = new ArrayList<String>();
 		Attribute requireBundles = manifest.getAttribute("Require-Bundle");
-		for (Dependency dep : project.getSbtFile().getLibraryDependencies()) {
+		for (Dependency dep : project.getDependencies()) {
 			String version = dep.version.replace('-', '.');
 			String symbolicName = dep.organization + "." + dep.name;
 			Value value = requireBundles.addUnique(symbolicName);
@@ -111,11 +110,11 @@ public class ManifestFile extends AbstractFile {
 	}
 
 	private String getVersion() {
-	  return project.getSbtFile().getVersion().replace('-', '.');
+	  return project.getVersion().replace('-', '.');
   }
 
 	private String getSymbolicName() {
-	  return project.getSbtFile().getOrganization() + "." + project.getSbtFile().getName();
+	  return project.getOrganization() + "." + project.getName();
   }
 	
 	private boolean checkDepJar(File root, Dependency dep) {

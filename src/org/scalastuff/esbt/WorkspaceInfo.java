@@ -67,22 +67,11 @@ public class WorkspaceInfo {
 		return result;
 	}
 	
-	public static Set<ProjectInfo> pullModifiedProjects() throws CoreException, IOException {
-		updateProjects();
-		Set<ProjectInfo> result = new HashSet<ProjectInfo>();
-		for (ProjectInfo project : projects.values()) {
-			if (!project.checkUpToDate()) {
-				result.add(project);
-			}
-		}
-		return result;
-	}
-	
 	public static ProjectInfo findProject(String organization, String name, String version) {
 		for (ProjectInfo project : projects.values()) {
-			if (project.getSbtFile().getOrganization().equals(organization)
-					&& project.getSbtFile().getName().equals(name)
-					&& project.getSbtFile().getVersion().equals(version)) {
+			if (project.getOrganization().equals(organization)
+					&& project.getName().equals(name)
+					&& project.getVersion().equals(version)) {
 				return project;
 			}
 		}
@@ -109,7 +98,7 @@ public class WorkspaceInfo {
 			IStructuredSelection strucSelection = (IStructuredSelection) selection;
 			for (Iterator<?> iterator = strucSelection.iterator(); iterator.hasNext();) {
 				ProjectInfo project = WorkspaceInfo.adaptToProject(iterator.next());
-				if (project != null && project.getSbtFile().exists()) {
+				if (project != null && project.isSbtProject()) {
 					projects.add(project);
 				}
 			}

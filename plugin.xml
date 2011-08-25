@@ -10,9 +10,9 @@
       </category>
       <command
             categoryId="org.scalastuff.esbt.commands.category"
-            defaultHandler="org.scalastuff.esbt.UpdateDependenciesCommand"
-            id="org.scalastuff.esbt.commands.updateDependencies"
-            name="SBT Update Dependencies">
+            defaultHandler="org.scalastuff.esbt.UpdateProjectConfigurationCommand"
+            id="org.scalastuff.esbt.commands.updateProjectConfiguration"
+            name="SBT Update Project Configuration">
       </command>
       <command
             categoryId="org.scalastuff.esbt.commands.category"
@@ -26,10 +26,10 @@
       <menuContribution
             locationURI="popup:org.eclipse.ui.popup.any">
             <command
-                  commandId="org.scalastuff.esbt.commands.updateDependencies"
-                  mnemonic="S"
-                  label="SBT Update Dependencies"
-                  id="org.scalastuff.esbt.menus.updateDependencies">
+                  commandId="org.scalastuff.esbt.commands.updateProjectConfiguration"
+                  mnemonic="U"
+                  label="SBT Update Project Configuration"
+                  id="org.scalastuff.esbt.menus.updateUpdateProjectConfiguration">
                     <visibleWhen>
                <with
                      variable="activeMenuSelection">

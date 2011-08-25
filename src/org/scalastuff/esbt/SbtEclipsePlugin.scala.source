@@ -1,37 +1,84 @@
+
 import sbt._
 import Keys._
 object SbtEclipsePlugin extends Plugin
 {
-  override lazy val settings = Seq(commands += myCommand)
+  private def generalInfoTask = {
+    (organization, name, version, scalaVersion) map {
+      (organization, name, version, scalaVersion) => Seq(
+        "organization :: " + organization,
+        "name :: " + name,
+        "version :: " + version,
+        "scalaVersion :: " + scalaVersion
+      )
+    }
+  }
+
+  private def relativize(base : File, file : File) = {
+    val rel = base.toURI().relativize(file.toURI())
+    if (rel.isAbsolute) new File(rel).toString 
+    else rel.toString
+  }
+
+  private def dependencyInfoTask = {
+    (baseDirectory, update) map {
+      (base, report) => 
+        val tuples = for (configuration <- report.configurations; module <- configuration.modules) yield {
+          module.artifacts.find(_._1.classifier == None) match {
+          case Some(art) =>
+            val source = module.artifacts.find(_._1.classifier == Some("sources")) match {
+              case Some(art) => " :: " + relativize(base, art._2)
+              case None => ""
+          }
+            (module.module.organization, module.module.name, module.module.revision, relativize(base, art._2), source)
+          case None =>
+          }
+        }
+        for ((organization, name, version, jar, src) <- tuples.toSet.toSeq) 
+          yield "dependency :: " + organization + " :: " + name + " :: " + version + " :: " + jar + src
+    }
+  }
+
+  private def sourceDirsInfoTask = {
+    (baseDirectory, unmanagedSourceDirectories in Compile, unmanagedSourceDirectories in Test, unmanagedResourceDirectories in Compile, unmanagedResourceDirectories in Test, classDirectory in Compile, classDirectory in Test) map {
+      (base, src, testsrc, res, testres, classDir, testClassDir) => 
+        val s1 = for (dir <- src) yield "sourceDirectory :: " + relativize(base, dir)
+        val s2 = for (dir <- testsrc) yield "testSourceDirectory :: " + relativize(base, dir)
+        val s3 = for (dir <- res) yield "resourceDirectory :: " + relativize(base, dir)
+        val s4 = for (dir <- testres) yield "testResourceDirectory :: " + relativize(base, dir)
+        s1 ++ s2 ++ s3 ++ s4 ++ Seq(        
+          "classDirectory :: " + relativize(base, classDir),
+          "testClassDirectory :: " + relativize(base, testClassDir))
+          
+    }
+  }
+
+  val generalInfo = TaskKey[Seq[String]]("generalInfo")
+  val dependencyInfo = TaskKey[Seq[String]]("dependencyInfo")
+  val sourceDirsInfo = TaskKey[Seq[String]]("sourceDirsInfo")
+
+  override lazy val settings = Defaults.defaultConfigs ++ Seq(
+    generalInfo <<= generalInfoTask, 
+    dependencyInfo <<= dependencyInfoTask, 
+    sourceDirsInfo <<= sourceDirsInfoTask, 
+    commands += myCommand
+  )
+  
+  private def print(result : Option[Result[Seq[String]]]) {
+    result match {
+      case Some(Value(ss)) => 
+        for (s <- ss) {
+          println("[result] " + s)
+        }
+      case _ =>
+    }
+  }
 
   lazy val myCommand =
     Command.command("update-eclipse") { (state: State) =>
-    
-        val libraryDeps = Keys.libraryDependencies 
-        //println(Project.evaluateTask(libraryDeps, state))
-        
-        val taskKey = Keys.update in Compile
-        val result: Option[Result[UpdateReport]] = Project.evaluateTask(taskKey, state)
-        result match {
-            case None => // Key wasn't defined.
-            case Some(Inc(inc)) => // error detail- inc is of type Incomplete.  use 
-            println(Incomplete.show(inc.tpe)) //to get an error message
-            case Some(Value(report)) => 
-            val tuples = for (configuration <- report.configurations; module <- configuration.modules) yield {
-            	module.artifacts.find(_._1.classifier == None) match {
-            	case Some(art) =>
-            		val source = module.artifacts.find(_._1.classifier == Some("sources")) match {
-            			case Some(art) => " :: " + art._2
-            			case None => ""
-        			}
-            		(module.module.organization, module.module.name, module.module.revision, art._2, source)
-            	case None =>
-            	}
-            }
-            for ((organization, name, version, jar, src) <- tuples.toSet) {
-            	println("[result] dependency :: " + organization + " :: " + name + " :: " + version + " :: " + jar + src)
-            }
-        }
+      print(Project.evaluateTask(generalInfo, state))
+      print(Project.evaluateTask(dependencyInfo, state))
+      print(Project.evaluateTask(sourceDirsInfo, state))
       state
     }
 }

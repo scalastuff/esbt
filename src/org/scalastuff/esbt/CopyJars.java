@@ -8,26 +8,14 @@ import java.io.IOException;
 
 public class CopyJars {
 
-	private static File userHome;
-	private static File jarsDir;
-	
-	private static File getJarsDir() throws IOException {
-		if (jarsDir == null) {
-			userHome = new File(System.getProperty("user.home"));
-			jarsDir = new File(userHome, ".esbt/jars");
-			jarsDir.mkdirs();
-		}
-		return jarsDir;
-	}
+	public static final File JARS_DIR = new File(Esbt.ESBT_HOME, "jars");
 
-	public static void copyJars(Dependency dep) throws FileNotFoundException, IOException {
-		dep.jar = copyFile(dep, dep.jar);
-		dep.srcJar = copyFile(dep, dep.srcJar);
-	}
-	
-	private static String copyFile(Dependency dep, String file) throws FileNotFoundException, IOException {
+	public static String copyFile(Dependency dep, File baseDir, String file) throws FileNotFoundException, IOException {
 		if (!file.trim().isEmpty()) {
-			return copyFile(new File(file), new File(getJarsDir(), dep.organization + "-" + new File(file).getName())).getCanonicalPath();
+			if (!new File(file).isAbsolute()) {
+				file = new File(baseDir, file).toString();
+			}
+			return copyFile(new File(file), new File(JARS_DIR, dep.organization + "-" + new File(file).getName())).getCanonicalPath();
 		}
 		return file;
 	}
@@ -45,6 +33,7 @@ public class CopyJars {
 				||source.lastModified() != dest.lastModified()
 				|| source.length() != dest.lastModified()) {
 			try {
+				dest.getParentFile().mkdirs();
 				Utils.copy(new FileInputStream(source), new FileOutputStream(dest));
 				dest.setLastModified(source.lastModified());
 				break;

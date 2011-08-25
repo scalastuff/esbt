@@ -6,15 +6,21 @@ import java.util.List;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 
-public class AbstractFile {
+public class FileContent {
 
 	private final IFile file;
 	private List<String> lines = Collections.emptyList();
 	
-	protected AbstractFile(IFile file) {
-		this.file = file;
-		refresh();
+	protected FileContent(IFile file) {
+		this(file, true);
   }
+	
+	protected FileContent(IFile file, boolean refresh) {
+		this.file = file;
+		if (refresh) {
+			refresh();
+		}
+	}
 	
 	public IFile getFile() {
 	  return file;

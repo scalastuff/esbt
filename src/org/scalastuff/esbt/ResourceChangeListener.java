@@ -49,8 +49,7 @@ public class ResourceChangeListener implements IResourceChangeListener {
           //only interested in files with the "txt" extension
           if (resource.getType() == IResource.FILE && 
 		"build.sbt".equals(resource.getName())
-		|| "Build.scala".equals(resource.getName())
-		|| ".classpath".equals(resource.getName())) {
+		|| (resource.getName().endsWith("scala") && resource.getParent().getName().equals("project"))) {
              changed.add(resource);
           }
           return true;

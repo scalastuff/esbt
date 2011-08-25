@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class BuildSbtFile extends AbstractFile {
+public class BuildSbtFile extends FileContent {
 
 	protected BuildSbtFile(ProjectInfo project) {
 	  super(project.getProject().getFile("build.sbt"));

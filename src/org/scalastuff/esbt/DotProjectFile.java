@@ -22,9 +22,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.eclipse.core.resources.ICommand;
+import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.runtime.CoreException;
 
-public class ClassPathFile extends AbstractFile {
+public class DotProjectFile extends FileContent {
 
 	private final ProjectInfo project;
 
@@ -32,8 +34,8 @@ public class ClassPathFile extends AbstractFile {
 		return true;//lines.isEmpty() || lines.contains(PLUGIN_INDICATION);
 	}
 	
-	public ClassPathFile(ProjectInfo project) {
-		super(project.getProject().getFile(".classpath"));
+	public DotProjectFile(ProjectInfo project) {
+		super(project.getProject().getFile(".project"));
 		this.project = project;
   }
 	
@@ -41,12 +43,12 @@ public class ClassPathFile extends AbstractFile {
 		super.doWrite(update(project, refresh(), projectDeps, deps));
 	}
 	
-	private static List<String> update(ProjectInfo project, List<String> lines, Set<ProjectInfo> projectDeps, List<Dependency> deps) {
+	private static List<String> update(ProjectInfo project, List<String> lines, Set<ProjectInfo> projectDeps, List<Dependency> deps) throws CoreException {
 		lines = new ArrayList<String>(lines);
 		if (lines.isEmpty()) {
 			lines.add("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-			lines.add("<classpath>");
-			lines.add("</classpath>");
+			lines.add("<projectDescription>");
+			lines.add("</projectDescription>");
 		}
 		for (Dependency dep : deps) {
 			if (dep.jar.trim().equals("")) continue;
@@ -55,13 +57,26 @@ public class ClassPathFile extends AbstractFile {
 				lines.remove(line);
 			}
 		}
+		IProjectDescription desc = project.getProject().getDescription();
+		if (!project.getName().equals("")) {
+			if (!project.getOrganization().equals("")) {
+				desc.setName(project.getOrganization() + "." + project.getName());
+			} else {
+				desc.setName(project.getName());
+			}
+		}
+	  ICommand[] commands = desc.getBuildSpec();
+	  for (ICommand command : commands) {
+	  }
+		
 		for (int i = lines.size() - 1; i >= 0; i--) {
-			if (lines.get(i).contains("from=\"sbt\"")) {
-				lines.remove(i);
+			if (lines.get(i).contains("from=\"sbt\"") && lines.get(i).contains("<buildCommand>")) {
+//				lines.remove(i);
+				while (i < lines.size() && lines.get(i).contains("</buildCommand>"));
 			}
 		}
 		
-		int line = indexOfLineContaining(lines, "</classpath>");
+		int line = indexOfLineContaining(lines, "</projectDescription>");
 		if (line < 0) {
 			line = lines.size();
 		}
