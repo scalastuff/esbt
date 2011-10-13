@@ -24,9 +24,9 @@ object SbtEclipsePlugin extends Plugin
     (baseDirectory, update) map {
       (base, report) => 
         val tuples = for (configuration <- report.configurations; module <- configuration.modules) yield {
-          module.artifacts.find(_._1.classifier == None) match {
+          module.artifacts.find(_._1.`type` == "jar") match {
           case Some(art) =>
-            val source = module.artifacts.find(_._1.classifier == Some("sources")) match {
+            val source = module.artifacts.find(_._1.`type` == "src") match {
               case Some(art) => " :: " + relativize(base, art._2)
               case None => ""
           }
