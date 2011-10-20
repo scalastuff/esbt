@@ -2,16 +2,12 @@
 <feature
       id="esbt"
       label="esbt"
-      version="0.10.9"
+      version="0.11.1"
       provider-name="org.scalastuff">
 
    <description>
       Eclipse SBT Plugin
    </description>
-
-   <license url="http://www.example.com/license">
-      [Enter License Description here.]
-   </license>
 
    <url>
       <update url="https://raw.github.com/scalastuff/updatesite/master"/>
@@ -20,16 +16,16 @@
    <requires>
       <import plugin="org.eclipse.ui"/>
       <import plugin="org.eclipse.core.runtime"/>
-      <import plugin="org.eclipse.ui.console" version="3.5.0" match="greaterOrEqual"/>
-      <import plugin="org.eclipse.core.resources" version="3.6.0" match="greaterOrEqual"/>
-      <import plugin="org.eclipse.core.expressions" version="3.4.200" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.ui.console" version="3.5.0"/>
+      <import plugin="org.eclipse.core.resources" version="3.6.0"/>
+      <import plugin="org.eclipse.core.expressions" version="3.4.0"/>
    </requires>
 
    <plugin
          id="scalastuff.esbt"
          download-size="0"
          install-size="0"
-         version="0.10.9"
+         version="0.11.1"
          unpack="false"/>
 
 </feature>

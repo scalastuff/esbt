@@ -227,7 +227,7 @@ public class ProjectInfo {
 		project.setDescription(desc, null);
 
 		// rename project?
-		renameProject();
+//		renameProject();
 
 	}
 	

@@ -1,18 +1,13 @@
 package org.scalastuff.esbt;
 
 import static org.scalastuff.esbt.Utils.copy;
-import static org.scalastuff.esbt.Utils.qname;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.jar.Attributes;
-import java.util.jar.JarFile;
-import java.util.jar.Manifest;
 
 import org.eclipse.core.runtime.CoreException;
 import org.scalastuff.osgitools.OsgiManifest;
@@ -49,7 +44,7 @@ public class ManifestFile extends FileContent {
 			}
 		}
 		
-		boolean embedDependencies = isTrue(lines, "Embed-Dependencies");
+//		boolean embedDependencies = isTrue(lines, "Embed-Dependencies");
 		
 		manifest.getAttribute("Allow-ESBT").setValue("true");
 		manifest.getAttribute("Bundle-ManifestVersion").setValue("2", false);
@@ -117,44 +112,6 @@ public class ManifestFile extends FileContent {
 	  return project.getOrganization() + "." + project.getName();
   }
 	
-	private boolean checkDepJar(File root, Dependency dep) {
-		try {
-			if (root.isFile()) {
-				JarFile jarFile = new JarFile(root);
-				try {
-					Manifest manifest = jarFile.getManifest();
-					return checkDepJar(manifest, dep);
-				} finally {
-					jarFile.close();
-				}
-			} else if (root.isDirectory()) {
-				Manifest manifest = new Manifest(new FileInputStream(new File("META-INF/MANIFEST.MF")));
-				return checkDepJar(manifest, dep);
-			}
-		  return false;
-		} catch (IOException e) {
-			return false;
-		}
-  }
-
-	private boolean checkDepJar(Manifest manifest, Dependency dep) {
-	  if (manifest != null) {
-	  	Attributes attrs = manifest.getMainAttributes();
-	  	String symbolicName = attrs.getValue("Bundle-SymbolicName");
-			String qname = qname(dep.organization, dep.name, "", "");
-			String version = dep.version.replace('-', '.');
-			String bundleVersion = attrs.getValue("Bundle-Version");
-			if (((dep.organization + "." + dep.name).equals(symbolicName) || qname.equals(symbolicName) || dep.name.equals(symbolicName))
-	  			&& version.equals(bundleVersion)) {
-	  		System.out.println("Found OSGi dependency: " + attrs.getValue("Bundle-Name"));
-	  		dep.osgiSymbolicName = symbolicName;
-	  		dep.osgiBundleVersion = bundleVersion;
-	  		return true;
-	  	}
-	  }
-	  return false;
-  }
-
 	private static boolean isTrue(List<String> lines, String property) {
 		List<String> list = get(lines, property);
 		return (!list.isEmpty() && list.get(0).toLowerCase().equals("true"));

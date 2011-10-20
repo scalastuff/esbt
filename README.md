@@ -29,6 +29,10 @@ One can issue an SBT command by choosing "SBT Command..." from the project conte
 
 # Release Notes
 
+## 0.11.1
+
+- Removed project rename
+
 ## 0.11.0
 
 - Based on SBT 0.11

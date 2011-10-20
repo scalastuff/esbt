@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.eclipse.core.resources.ICommand;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.runtime.CoreException;
 
@@ -65,9 +64,6 @@ public class DotProjectFile extends FileContent {
 				desc.setName(project.getName());
 			}
 		}
-	  ICommand[] commands = desc.getBuildSpec();
-	  for (ICommand command : commands) {
-	  }
 		
 		for (int i = lines.size() - 1; i >= 0; i--) {
 			if (lines.get(i).contains("from=\"sbt\"") && lines.get(i).contains("<buildCommand>")) {
