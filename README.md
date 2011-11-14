@@ -3,7 +3,7 @@ Eclipse SBT Plugin
 
 # Features:
 
-- Based on SBT 0.10.1
+- Based on SBT 0.11.1
 - automatically downloads dependencies using SBT
 - automatically updates eclipse project configuration
 - attaches sources of dependencies that have withSources()
@@ -28,6 +28,10 @@ One can manually trigger the update by choosing "SBT Update Project Configuratio
 One can issue an SBT command by choosing "SBT Command..." from the project context menu.
 
 # Release Notes
+
+## 0.11.2
+
+- Recognize ivy packages with bundles instead of jars 
 
 ## 0.11.1
 
