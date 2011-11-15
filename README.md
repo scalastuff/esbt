@@ -29,6 +29,10 @@ One can issue an SBT command by choosing "SBT Command..." from the project conte
 
 # Release Notes
 
+## 0.11.3
+
+- upgraded to sbt 0.11.1 
+
 ## 0.11.2
 
 - Recognize ivy packages with bundles instead of jars 
